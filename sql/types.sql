@@ -1,12 +1,12 @@
-DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS types;
 
-CREATE TABLE categories (
+CREATE TABLE types (
     id INT UNSIGNED AUTO_INCREMENT,
     name VARCHAR(32) UNIQUE NOT NULL,
     PRIMARY KEY (id)
 );
 
-INSERT INTO categories
+INSERT INTO types
     (
         id,
         name
@@ -14,13 +14,13 @@ INSERT INTO categories
 VALUES
     (
         1,
-        'JavaScript'
+        'Article'
     ),
     (
         2,
-        'TypeScript'
+        'Audio'
     ),
     (
         3,
-        'Angular'
+        'Video'
     );

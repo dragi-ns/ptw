@@ -43,15 +43,21 @@
 					</a>
 				</li>
 				<li class="nav-item">
-					<a href="<?php echo $this->Html->url(array('controller' => 'resources', 'action' => 'index', 'admin' => true)); ?>"
-					   class="nav-link<?php echo strpos($this->here, '/admin/resources') !== false ? ' active' : '' ?>">
-						Resources
+					<a href="<?php echo $this->Html->url(array('controller' => 'types', 'action' => 'index', 'admin' => true)); ?>"
+					   class="nav-link<?php echo strpos($this->here, '/admin/types') !== false ? ' active' : '' ?>">
+						Types
 					</a>
 				</li>
 				<li class="nav-item">
 					<a href="<?php echo $this->Html->url(array('controller' => 'categories', 'action' => 'index', 'admin' => true)); ?>"
 					   class="nav-link<?php echo strpos($this->here, '/admin/categories') !== false ? ' active' : '' ?>">
 						Categories
+					</a>
+				</li>
+				<li class="nav-item">
+					<a href="<?php echo $this->Html->url(array('controller' => 'resources', 'action' => 'index', 'admin' => true)); ?>"
+					   class="nav-link<?php echo strpos($this->here, '/admin/resources') !== false ? ' active' : '' ?>">
+						Resources
 					</a>
 				</li>
 			</ul>

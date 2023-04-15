@@ -27,7 +27,6 @@ $(document).on("submit", "#category-form", (event) => {
 		url: form.attr("action"),
 		data: form.serialize(),
 		success: (response) => {
-			console.log(response);
 			if (response.success) {
 				const categoryRow = $(`tr[data-id="${response.category.id}"]`);
 				if (categoryRow.length !== 0) {
