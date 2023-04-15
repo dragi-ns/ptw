@@ -20,6 +20,7 @@
 		  integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
 		  crossorigin="anonymous">
 	<?php echo $this->Html->css('main'); ?>
+	<?php echo $this->Html->css('admin'); ?>
 	<?php echo $this->fetch('css'); ?>
 </head>
 <body class="d-flex flex-column h-100">
@@ -29,12 +30,10 @@
 	'isAdmin' => $isAdmin
 )); ?>
 
-<main class="d-flex flex-column flex-grow-1 flex-shrink-0">
-	<div class="container py-4">
-		<?php echo $this->Flash->render() ?>
+<?php echo $this->Flash->render() ?>
 
-		<?php echo $this->fetch('content'); ?>
-	</div>
+<main class="d-flex flex-column flex-grow-1 flex-shrink-0">
+	<?php echo $this->fetch('content'); ?>
 </main>
 
 <?php echo $this->element('footer'); ?>

@@ -58,7 +58,9 @@ class AppController extends Controller {
 			'authorize' => array('Controller')
 		),
 		'Flash',
-		'Security',
+		'Security' => array(
+			'csrfUseOnce' => false
+		),
 		'Session',
 		'Paginator'
 	);

@@ -30,4 +30,26 @@ App::uses('Model', 'Model');
  * @package       app.Model
  */
 class AppModel extends Model {
+	public function getCount() {
+		return $this->find('count', array('recursive' => -1));
+	}
+
+	public function save($data = null, $validate = true, $fieldList = array()) {
+		if (!$this->_save($data, $validate, $fieldList)) {
+			return false;
+		}
+
+		return $this->read(array('id', 'username', 'email', 'approved', 'role', 'created', 'modified'));
+	}
+
+	public function beforeSave($options = array()) {
+		foreach ($this->data[$this->alias] as $key => $value) {
+			$this->data[$this->alias][$key] = strip_tags($value);
+		}
+		return parent::beforeSave($options);
+	}
+
+	protected function _save($data = null, $validate = true, $fieldList = array()) {
+		return parent::save($data, $validate, $fieldList);
+	}
 }

@@ -1,0 +1,31 @@
+.sidebar .nav {
+	row-gap: 1rem;
+}
+
+.sidebar .nav-link {
+	border: 1px solid #343a40;
+	border-radius: 0.25rem;
+	transition: all 250ms;
+	color: #343a40;
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+	color: #ffffff;
+	background-color: #343a40;
+}
+
+.table .username-col,
+.table .email-col {
+	width: 30%;
+}
+
+.table td {
+	vertical-align: middle;
+}
+
+@media screen and (min-width: 768px) {
+	.admin-container {
+		height: 100%;
+	}
+}

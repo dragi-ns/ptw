@@ -63,6 +63,26 @@ class User extends AppModel {
 				'message' => 'Your passwords do not match.'
 			)
 		),
+		'new_password' => array(
+			'required' => array(
+				'rule' => 'notBlank',
+				'allowEmpty' => true,
+				'message' => 'Please enter a new password.',
+				'on' => 'update'
+			),
+			'minLength' => array(
+				'rule' => array('minLength', 4),
+				'message' => 'Password must at least 4 characters long.',
+				'on' => 'update'
+			),
+		),
+		'new_password_confirm' => array(
+			'matchPasswords' => array(
+				'rule' => array('matchPasswords', 'new_password'),
+				'message' => 'Your passwords do not match.',
+				'on' => 'update'
+			)
+		),
 		'role' => array(
 			'required' => array(
 				'rule' => 'notBlank',
@@ -91,6 +111,11 @@ class User extends AppModel {
 			$passwordHasher = new BlowfishPasswordHasher();
 			$this->data[$this->alias]['password'] = $passwordHasher->hash(
 				$this->data[$this->alias]['password']
+			);
+		} else if (isset($this->data[$this->alias]['new_password']) && $this->data[$this->alias]['new_password']) {
+			$passwordHasher = new BlowfishPasswordHasher();
+			$this->data[$this->alias]['password'] = $passwordHasher->hash(
+				$this->data[$this->alias]['new_password']
 			);
 		}
 	}

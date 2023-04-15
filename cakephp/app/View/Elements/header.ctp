@@ -25,7 +25,10 @@
 				<div class="navbar-left d-flex flex-wrap align-items-center ml-auto">
 					<?php if ($isAuth): ?>
 						<?php if ($isAdmin): ?>
-							<a href="#" class="btn btn-outline-dark mr-3">Dashboard</a>
+							<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'index', 'admin' => true)) ?>"
+							   class="btn btn-outline-dark mr-3">
+								Dashboard
+							</a>
 						<?php endif; ?>
 
 						<div class="dropdown">
@@ -37,7 +40,7 @@
 								<a href="#" class="dropdown-item">History</a>
 								<a href="#" class="dropdown-item">Settings</a>
 								<div class="dropdown-divider"></div>
-								<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'logout')); ?>"
+								<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'logout', 'admin' => false)); ?>"
 								   class="dropdown-item">
 									Logout
 								</a>
@@ -46,11 +49,11 @@
 						</div>
 						<!--./dropdown-->
 					<?php else: ?>
-						<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'login')); ?>"
+						<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'login', 'admin' => false)); ?>"
 						   class="btn btn-outline-dark mr-3">
 							Login
 						</a>
-						<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'registration')); ?>"
+						<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'registration', 'admin' => false)); ?>"
 						   class="btn btn-dark">
 							Register
 						</a>
@@ -63,3 +66,6 @@
 		<!--./container-->
 	</nav>
 </header>
+
+<div id="toasts-container" class="position-fixed bottom-0 left-0 p-3" style="z-index: 5">
+</div>

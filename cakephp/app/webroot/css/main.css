@@ -42,6 +42,18 @@ body {
 	display: block;
 }
 
+.disabled.page-link:hover {
+	background: none;
+}
+
+.disabled.page-link > a {
+	color: #6c757d;
+	pointer-events: none;
+	cursor: auto;
+	background-color: #fff;
+	border-color: #dee2e6;
+}
+
 .rg-1 {
 	row-gap: 0.25rem;
 }
@@ -84,6 +96,22 @@ body {
 
 .max-w-500 {
 	max-width: 500px;
+}
+
+.top-0 {
+	top: 0;
+}
+
+.bottom-0 {
+	bottom: 0;
+}
+
+.right-0 {
+	right: 0;
+}
+
+.left-0 {
+	left: 0;
 }
 
 @media screen and (min-width: 768px) {
