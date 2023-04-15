@@ -33,7 +33,33 @@
 <?php echo $this->Flash->render() ?>
 
 <main class="d-flex flex-column flex-grow-1 flex-shrink-0">
-	<?php echo $this->fetch('content'); ?>
+	<div class="admin-container row no-gutters">
+		<div class="sidebar col-12 col-md-3 col-lg-2 px-3 py-4">
+			<ul class="nav flex-column">
+				<li class="nav-item">
+					<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'index', 'admin' => true)); ?>"
+					   class="nav-link<?php echo strpos($this->here, '/admin/users') !== false ? ' active' : '' ?>">
+					   Users
+					</a>
+				</li>
+				<li class="nav-item">
+					<a href="<?php echo $this->Html->url(array('controller' => 'resources', 'action' => 'index', 'admin' => true)); ?>"
+					   class="nav-link<?php echo strpos($this->here, '/admin/resources') !== false ? ' active' : '' ?>">
+						Resources
+					</a>
+				</li>
+				<li class="nav-item">
+					<a href="<?php echo $this->Html->url(array('controller' => 'categories', 'action' => 'index', 'admin' => true)); ?>"
+					   class="nav-link<?php echo strpos($this->here, '/admin/categories') !== false ? ' active' : '' ?>">
+						Categories
+					</a>
+				</li>
+			</ul>
+		</div>
+		<div class="col-12 col-md-9 col-lg-10 px-3 py-4 p-lg-4 pr-lg-5">
+			<?php echo $this->fetch('content'); ?>
+		</div>
+	</div>
 </main>
 
 <?php echo $this->element('footer'); ?>
@@ -42,7 +68,9 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<script>const csrfToken = "<?php echo $this->request->params['_Token']['key']; ?>";</script>
 <?php echo $this->Html->script('main'); ?>
+<?php echo $this->Html->script('admin_main'); ?>
 <?php echo $this->fetch('script');?>
 </body>
 </html>

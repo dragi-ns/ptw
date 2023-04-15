@@ -5,7 +5,7 @@ addUserButton.click(() => {
 
 const usersTable = $("#users-table");
 usersTable.on("click", ".toggle-approved-btn", (event) => {
-	const userId = $(event.currentTarget).closest("tr").data("user-id");
+	const userId = $(event.currentTarget).closest("tr").data("id");
 
 	$.ajax({
 		type: "POST",
@@ -13,7 +13,7 @@ usersTable.on("click", ".toggle-approved-btn", (event) => {
 		data: `data%5B_Token%5D%5Bkey%5D=${csrfToken}`,
 		success: (response) => {
 			if (response.success) {
-				const userRow = $(`tr[data-user-id="${response.user_id}"]`);
+				const userRow = $(`tr[data-id="${response.user_id}"]`);
 				userRow.find("td:nth-child(6)").text(response.approved);
 				$(event.currentTarget).html(
 					response.approved
@@ -39,7 +39,12 @@ usersTable.on("click", ".edit-user-btn", (event) => {
 });
 usersTable.on("click", ".delete-user-btn", (event) => {
 	const userData = $(event.currentTarget).closest("tr").data("user");
-	initializeModal(createDeleteModal(userData));
+	initializeModal(
+		createConfirmationModal({
+			submitUrl: `/admin/users/delete/${userData.id}`,
+			message: `Are you sure you want to delete the user "${userData.id} - ${userData.username}"?`,
+		})
+	);
 });
 
 $(document).on("submit", "#user-form", (event) => {
@@ -52,18 +57,23 @@ $(document).on("submit", "#user-form", (event) => {
 		data: form.serialize(),
 		success: (response) => {
 			if (response.success) {
-				const userRow = $(`tr[data-user-id="${response.user.id}"]`);
+				const userRow = $(`tr[data-id="${response.user.id}"]`);
 				if (userRow.length !== 0) {
 					userRow.replaceWith(createUserRow(response.user));
 					initializeToast(
 						`User "${response.user.id} - ${response.user.username}" was successfully updated!`
 					);
 				} else {
-					$("#users-table tbody").prepend(createUserRow(response.user));
-					const totalNumberOfUsers = $("#total-number-of-users");
-					totalNumberOfUsers.text(
-						`(${Number(totalNumberOfUsers.text().slice(1, -1)) + 1})`
-					);
+					const tableTbody = $("#users-table tbody");
+					const totalNumberOfUsersSpan = $("#total-number-of-items");
+					const currentNumberOfUsers =
+						Number(totalNumberOfUsersSpan.text().slice(1, -1)) + 1;
+					totalNumberOfUsersSpan.text(`(${currentNumberOfUsers})`);
+					if (currentNumberOfUsers === 1) {
+						tableTbody.html(createUserRow(response.user));
+					} else {
+						tableTbody.prepend(createUserRow(response.user));
+					}
 					initializeToast(
 						`User "${response.user.id} - ${response.user.username}" was successfully added!`
 					);
@@ -81,7 +91,7 @@ $(document).on("submit", "#user-form", (event) => {
 		},
 	});
 });
-$(document).on("submit", "#delete-form", (event) => {
+$(document).on("submit", "#confirm-form", (event) => {
 	event.preventDefault();
 	const form = $(event.currentTarget);
 
@@ -91,12 +101,16 @@ $(document).on("submit", "#delete-form", (event) => {
 		data: form.serialize(),
 		success: (response) => {
 			if (response.success) {
-				const userRow = $(`tr[data-user-id="${response.user_id}"]`);
-				userRow.remove();
-				const totalNumberOfUsers = $("#total-number-of-users");
-				totalNumberOfUsers.text(
-					`(${Number(totalNumberOfUsers.text().slice(1, -1)) - 1})`
-				);
+				const userRow = $(`tr[data-id="${response.user_id}"]`);
+				const totalNumberOfUsersSpan = $("#total-number-of-items");
+				const currentNumberOfUsers =
+					Number(totalNumberOfUsersSpan.text().slice(1, -1)) - 1;
+				totalNumberOfUsersSpan.text(`(${currentNumberOfUsers})`);
+				if (currentNumberOfUsers === 0) {
+					userRow.replaceWith(createEmptyRow("There are no users."));
+				} else {
+					userRow.remove();
+				}
 				initializeToast(`User was successfully deleted!`);
 			} else {
 				initializeToast(`User wasn't successfully deleted!`);
@@ -107,7 +121,7 @@ $(document).on("submit", "#delete-form", (event) => {
 			console.error(error);
 		},
 		complete: () => {
-			$("#delete-modal").modal("hide");
+			$("#confirm-modal").modal("hide");
 		},
 	});
 });
@@ -215,38 +229,9 @@ function createUserModal(userData = null) {
 	`;
 }
 
-function createDeleteModal(userData) {
-	const submitUrl = `/admin/users/delete/${userData.id}`;
-
-	return `
-		<div id="delete-modal" class="modal fade">
-			<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title">Delete confirmation</h5>
-						<button type="button" class="close" data-dismiss="modal">
-							<span>&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
-						<form id="delete-form" action="${submitUrl}" method="POST">
-							<input type="hidden" name="data[_Token][key]" value="${csrfToken}" autocomplete="off"/>
-						</form>
-						<p>Are you sure you want to delete the user "${userData.id} - ${userData.username}"?</p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="submit" class="btn btn-danger" form="delete-form">Delete</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	`;
-}
-
 function createUserRow(user) {
 	return `
-		<tr data-user-id="${user.id}" data-user='${JSON.stringify(user)}'>
+		<tr data-id="${user.id}" data-user='${JSON.stringify(user)}'>
 			<td class="text-center">${user.id}</td>
 			<td>${user.username}</td>
 			<td><pre class="m-0">${user.email}</pre></td>
@@ -276,22 +261,4 @@ function createUserRow(user) {
 			</td>
 		</tr>
 	`;
-}
-
-function resetErrors(form) {
-	form.find(".form-group.error").each((_, formGroup) => {
-		formGroup = $(formGroup);
-		formGroup.removeClass("error");
-		formGroup.find("input").removeClass("form-error");
-		formGroup.find(".invalid-feedback").text("");
-	});
-}
-
-function markErrors(form, errors) {
-	for (const [fieldName, fieldErrors] of Object.entries(errors)) {
-		const field = form.find(`[name="data[User][${fieldName}]"]`);
-		field.addClass("form-error");
-		field.closest(".form-group").addClass("error");
-		field.siblings(".invalid-feedback").text(fieldErrors[0]);
-	}
 }

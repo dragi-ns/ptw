@@ -15,6 +15,14 @@
 	background-color: #343a40;
 }
 
+.table .id-col {
+	width: 1%;
+}
+
+.table .name-col {
+	width: 90%;
+}
+
 .table .username-col,
 .table .email-col {
 	width: 30%;

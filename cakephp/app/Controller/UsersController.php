@@ -39,7 +39,12 @@ class UsersController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		$this->User->clear();
-		$success = $this->User->save($this->request->data);
+		$success = $this->User->save(
+			$this->request->data,
+			true,
+			array(),
+			array('id', 'username', 'email', 'approved', 'role', 'created', 'modified')
+		);
 		$result = array('success' => (bool) $success);
 		if ($success) {
 			$success['User']['created'] = date('d/m/Y H:i:s', strtotime($success['User']['created']));
@@ -63,7 +68,12 @@ class UsersController extends AppController {
 		}
 
 		$this->User->id = $id;
-		$success = $this->User->save($this->request->data);
+		$success = $this->User->save(
+			$this->request->data,
+			true,
+			array(),
+			array('id', 'username', 'email', 'approved', 'role', 'created', 'modified')
+		);
 		$result = array('success' => (bool) $success);
 		if ($success) {
 			$success['User']['created'] = date('d/m/Y H:i:s', strtotime($success['User']['created']));

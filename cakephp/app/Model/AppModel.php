@@ -34,12 +34,12 @@ class AppModel extends Model {
 		return $this->find('count', array('recursive' => -1));
 	}
 
-	public function save($data = null, $validate = true, $fieldList = array()) {
+	public function save($data = null, $validate = true, $fieldList = array(), $fields = array()) {
 		if (!$this->_save($data, $validate, $fieldList)) {
 			return false;
 		}
 
-		return $this->read(array('id', 'username', 'email', 'approved', 'role', 'created', 'modified'));
+		return $this->read($fields);
 	}
 
 	public function beforeSave($options = array()) {
