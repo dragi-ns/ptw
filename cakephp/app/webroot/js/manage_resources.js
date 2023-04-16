@@ -46,6 +46,80 @@ resourcesCardContainer.on("click", ".delete-resource-btn", (event) => {
 	);
 });
 
+$(document).on("click", "#add-type-btn", () => {
+	initializeModal(createTypeModal());
+});
+$(document).on("click", "#add-category-btn", () => {
+	initializeModal(createCategoryModal());
+});
+
+$(document).on("submit", "#type-form", (event) => {
+	event.preventDefault();
+	const form = $(event.currentTarget);
+
+	$.ajax({
+		type: "POST",
+		url: form.attr("action"),
+		data: form.serialize(),
+		success: (response) => {
+			if (response.success) {
+				const typeSelect = $("select#type");
+				typeSelect.prepend(
+					`<option value="${response.type.id}">${response.type.name}</option>`
+				);
+				typeSelect.selectpicker("refresh");
+				typeSelect.selectpicker("val", [response.type.id]);
+				initializeToast(
+					`Type "${response.type.id} - ${response.type.name}" was successfully added!`
+				);
+				$("#type-modal").modal("hide");
+			} else {
+				resetErrors(form);
+				markErrors(form, response.errors);
+			}
+		},
+		error: (error) => {
+			initializeToast(`Type wasn't successfully added/updated!`);
+			$("#type-modal").modal("hide");
+			console.error(error);
+		},
+	});
+});
+$(document).on("submit", "#category-form", (event) => {
+	event.preventDefault();
+	const form = $(event.currentTarget);
+
+	$.ajax({
+		type: "POST",
+		url: form.attr("action"),
+		data: form.serialize(),
+		success: (response) => {
+			if (response.success) {
+				const categorySelect = $("select#category");
+				categorySelect.prepend(
+					`<option value="${response.category.id}">${response.category.name}</option>`
+				);
+				categorySelect.selectpicker("refresh");
+				categorySelect.selectpicker("val", [
+					...categorySelect.selectpicker("val"),
+					response.category.id,
+				]);
+				initializeToast(
+					`Category "${response.category.id} - ${response.category.name}" was successfully added!`
+				);
+				$("#category-modal").modal("hide");
+			} else {
+				resetErrors(form);
+				markErrors(form, response.errors);
+			}
+		},
+		error: (error) => {
+			initializeToast(`Category wasn't successfully added/updated!`);
+			$("#category-modal").modal("hide");
+			console.error(error);
+		},
+	});
+});
 $(document).on("submit", "#resource-form", (event) => {
 	event.preventDefault();
 	const form = $(event.currentTarget);
@@ -182,7 +256,10 @@ function createResourceModal(resourceData = null) {
 								 </select>
 							   	<div class="invalid-feedback"></div>
 							   	<small class="form-text text-muted text-right">
-							   		Don't see the type? <a href="#">Add Type</a>
+							   		Don't see the type?
+							   		<button type="button" id="add-type-btn" class="btn btn-sm btn-link">
+										Add Type
+							   		</button>
 								</small>
 							</div>
 
@@ -209,7 +286,10 @@ function createResourceModal(resourceData = null) {
 								</select>
 							   	<div class="invalid-feedback"></div>
 								<small class="form-text text-muted text-right">
-							   		Don't see the category? <a href="#">Add Category</a>
+							   		Don't see the category?
+							   		<button type="button" id="add-category-btn" class="btn btn-sm btn-link">
+							   			Add Category
+							   		</button>
 								</small>
 							</div>
 
