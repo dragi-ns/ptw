@@ -5,6 +5,10 @@ App::uses('AppModel', 'Model');
 class Type extends AppModel {
 	public $displayField = 'name';
 
+	public $hasMany = array(
+		'Resource' => array('dependent' => true)
+	);
+
 	public $validate = array(
 		'name' => array(
 			'required' => array(

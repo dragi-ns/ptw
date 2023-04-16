@@ -45,7 +45,7 @@ $this->Html->script('manage_users', array('inline' => false));
 			</tr>
 		<?php else: ?>
 			<?php foreach ($users as $user): ?>
-				<tr data-id="<?php echo $user['User']['id']; ?>" data-user='<?php echo json_encode($user['User']); ?>'>
+				<tr data-id="<?php echo $user['User']['id']; ?>" data-user='<?php echo h(json_encode($user['User'])); ?>'>
 					<td class="text-center"><?php echo h($user['User']['id']); ?></td>
 					<td><?php echo h($user['User']['username']); ?></td>
 					<td><pre class="m-0"><?php echo h($user['User']['email']); ?></pre></td>

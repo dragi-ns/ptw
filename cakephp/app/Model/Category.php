@@ -5,6 +5,8 @@ App::uses('AppModel', 'Model');
 class Category extends AppModel {
 	public $displayField = 'name';
 
+	public $hasAndBelongsToMany = array('Resource');
+
 	public $validate = array(
 		'name' => array(
 			'required' => array(

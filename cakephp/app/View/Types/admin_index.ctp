@@ -33,7 +33,7 @@ $this->Html->script('manage_types', array('inline' => false));
 			</tr>
 		<?php else: ?>
 			<?php foreach ($types as $type): ?>
-				<tr data-id="<?php echo $type['Type']['id']; ?>" data-type='<?php echo json_encode($type['Type']); ?>'>
+				<tr data-id="<?php echo $type['Type']['id']; ?>" data-type='<?php echo h(json_encode($type['Type'])); ?>'>
 					<td class="text-center"><?php echo h($type['Type']['id']); ?></td>
 					<td><?php echo h($type['Type']['name']); ?></td>
 					<td class="text-center d-flex justify-content-center align-items-center cg-1">

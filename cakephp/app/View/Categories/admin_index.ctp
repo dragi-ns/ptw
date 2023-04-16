@@ -33,7 +33,7 @@ $this->Html->script('manage_categories', array('inline' => false));
 			</tr>
 		<?php else: ?>
 			<?php foreach ($categories as $category): ?>
-				<tr data-id="<?php echo $category['Category']['id']; ?>" data-category='<?php echo json_encode($category['Category']); ?>'>
+				<tr data-id="<?php echo $category['Category']['id']; ?>" data-category='<?php echo h(json_encode($category['Category'])); ?>'>
 					<td class="text-center"><?php echo h($category['Category']['id']); ?></td>
 					<td><?php echo h($category['Category']['name']); ?></td>
 					<td class="text-center d-flex justify-content-center align-items-center cg-1">

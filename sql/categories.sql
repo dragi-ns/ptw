@@ -23,4 +23,16 @@ VALUES
     (
         3,
         'Angular'
+    ),
+    (
+        4,
+        'Python'
+    ),
+    (
+        5,
+        'Extension'
+    ),
+    (
+        6,
+        'Library'
     );

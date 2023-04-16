@@ -23,12 +23,18 @@ function initializeToast(message) {
 
 function initializeModal(modal) {
 	modal = $(modal);
-	$("body").append(modal);
-	modal.modal("show");
+	modal.on("show.bs.modal", () => {
+		const selectPicker = $(".selectpicker");
+		if (selectPicker.length !== 0) {
+			selectPicker.selectpicker();
+		}
+	});
 	modal.on("shown.bs.modal", () => {
 		$("[autofocus]").trigger("focus");
 	});
 	modal.on("hidden.bs.modal", () => {
 		modal.remove();
 	});
+	$("body").append(modal);
+	modal.modal("show");
 }

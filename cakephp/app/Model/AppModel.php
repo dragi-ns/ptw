@@ -30,12 +30,22 @@ App::uses('Model', 'Model');
  * @package       app.Model
  */
 class AppModel extends Model {
+	public $actsAs = array('Containable');
+
 	public function getCount() {
 		return $this->find('count', array('recursive' => -1));
 	}
 
 	public function save($data = null, $validate = true, $fieldList = array(), $fields = array()) {
 		if (!$this->_save($data, $validate, $fieldList)) {
+			return false;
+		}
+
+		return $this->read($fields);
+	}
+
+	public function saveAll($data = array(), $options = array(), $fields = array()) {
+		if (!$this->_saveAll($data, $options)) {
 			return false;
 		}
 
@@ -51,5 +61,9 @@ class AppModel extends Model {
 
 	protected function _save($data = null, $validate = true, $fieldList = array()) {
 		return parent::save($data, $validate, $fieldList);
+	}
+
+	protected function _saveAll($data = array(), $options = array()) {
+		return parent::saveAll($data, $options);
 	}
 }
