@@ -1,42 +1,16 @@
 const addResourceButton = $("#add-resource-btn");
+const cardsContainer = $("#cards-container");
+
 addResourceButton.click(() => {
-	console.log("called");
 	initializeModal(createResourceModal());
 });
 
-const resourcesCardContainer = $(".cards");
-resourcesCardContainer.on("click", ".toggle-approved-btn", (event) => {
-	const resourceId = $(event.currentTarget).closest(".card").data("id");
-
-	$.ajax({
-		type: "POST",
-		url: `/admin/resources/approve/${resourceId}`,
-		data: `data%5B_Token%5D%5Bkey%5D=${csrfToken}`,
-		success: (response) => {
-			if (response.success) {
-				$(event.currentTarget).html(
-					response.approved
-						? '<i class="bi bi-check2-all"></i>'
-						: '<i class="bi bi-x-lg"></i>'
-				);
-				initializeToast(
-					`Resource was successfully ${!response.approved ? "un" : ""}approved!`
-				);
-			} else {
-				initializeToast(`Resource wasn't successfully approved!`);
-			}
-		},
-		error: (error) => {
-			initializeToast(`Resource wasn't successfully approved!`);
-			console.error(error);
-		},
-	});
-});
-resourcesCardContainer.on("click", ".edit-resource-btn", (event) => {
+cardsContainer.on("click", ".toggle-approved-btn", handleResourceApprove);
+cardsContainer.on("click", ".edit-resource-btn", (event) => {
 	const resourceData = $(event.currentTarget).closest(".card").data("resource");
 	initializeModal(createResourceModal(resourceData));
 });
-resourcesCardContainer.on("click", ".delete-resource-btn", (event) => {
+cardsContainer.on("click", ".delete-resource-btn", (event) => {
 	const resourceData = $(event.currentTarget).closest(".card").data("resource");
 	initializeModal(
 		createConfirmationModal({
@@ -53,153 +27,172 @@ $(document).on("click", "#add-category-btn", () => {
 	initializeModal(createCategoryModal());
 });
 
-$(document).on("submit", "#type-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
+handleAjaxFormSubmit(
+	"#resource-form",
+	handleResourceSuccess,
+	handleResourceError
+);
+handleAjaxFormSubmit(
+	"#confirm-form",
+	handleResourceDeleteSuccess,
+	handleResourceDeleteError
+);
+
+handleAjaxFormSubmit("#type-form", handleTypeSuccess, handleTypeError);
+handleAjaxFormSubmit(
+	"#category-form",
+	handleCategorySuccess,
+	handleCategoryError
+);
+
+function handleResourceSuccess(form, response) {
+	if (response.success) {
+		const item = $(`div[data-id="${response.data.id}"]`);
+		const newItem = createResourceCard(response.data);
+		if (item.length === 0) {
+			const container = $("#cards-container");
+			const currentNumberOfItems = updateTotalNumberOfItems(1);
+			if (currentNumberOfItems === 1) {
+				container.html(newItem);
+			} else {
+				container.prepend(newItem);
+			}
+			initializeToast(
+				`Resource (id: ${response.data.id}, title: ${response.data.title}) successfully added.`
+			);
+		} else {
+			item.replaceWith(newItem);
+			initializeToast(
+				`Resource (id: ${response.data.id}, title: ${response.data.title}) successfully updated.`
+			);
+		}
+		$("#resource-modal").modal("hide");
+	} else {
+		resetErrors(form);
+		markErrors(form, response.errors);
+	}
+}
+
+function handleResourceError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#resource-modal").modal("hide");
+	console.error(xhr);
+}
+
+function handleResourceDeleteSuccess(form, response) {
+	if (response.success) {
+		const item = $(`div[data-id="${response.data.id}"]`);
+		const currentNumberOfItems = updateTotalNumberOfItems(-1);
+		if (currentNumberOfItems === 0) {
+			item.replaceWith(createEmptyParagraph("There are no resources."));
+		} else {
+			item.remove();
+		}
+		initializeToast(`Resource (id: ${response.data.id}) successfully deleted.`);
+	} else {
+		initializeToast(
+			`Resource (id: ${response.data.id}) wasn't successfully deleted.`
+		);
+	}
+	$("#confirm-modal").modal("hide");
+}
+
+function handleResourceDeleteError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#confirm-modal").modal("hide");
+	console.error(xhr);
+}
+
+function handleTypeSuccess(form, response) {
+	if (response.success) {
+		const typesSelect = $("select#type");
+		typesSelect.prepend(
+			`<option value="${response.data.id}">${response.data.name}</option>`
+		);
+		typesSelect.selectpicker("refresh");
+		typesSelect.selectpicker("val", [response.data.id]);
+		initializeToast(
+			`Type (id: ${response.data.id}, name: ${response.data.name}) was successfully added!`
+		);
+		$("#type-modal").modal("hide");
+	} else {
+		resetErrors(form);
+		markErrors(form, response.errors);
+	}
+}
+
+function handleTypeError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#type-modal").modal("hide");
+	console.error(xhr);
+}
+
+function handleCategorySuccess(form, response) {
+	if (response.success) {
+		const categoriesSelect = $("select#category");
+		categoriesSelect.prepend(
+			`<option value="${response.data.id}">${response.data.name}</option>`
+		);
+		categoriesSelect.selectpicker("refresh");
+		categoriesSelect.selectpicker("val", [
+			...categoriesSelect.selectpicker("val"),
+			response.data.id,
+		]);
+		initializeToast(
+			`Category (id: ${response.data.id}, name: ${response.data.name}) was successfully added!`
+		);
+		$("#category-modal").modal("hide");
+	} else {
+		resetErrors(form);
+		markErrors(form, response.errors);
+	}
+}
+
+function handleCategoryError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#category-modal").modal("hide");
+	console.error(xhr);
+}
+
+function handleResourceApprove(event) {
+	const resourceId = $(event.currentTarget).closest(".card").data("id");
 
 	$.ajax({
 		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
+		url: `/admin/resources/approve/${resourceId}`,
+		data: `data%5B_Token%5D%5Bkey%5D=${csrfToken}`,
 		success: (response) => {
 			if (response.success) {
-				const typeSelect = $("select#type");
-				typeSelect.prepend(
-					`<option value="${response.type.id}">${response.type.name}</option>`
+				$(event.currentTarget).html(
+					response.data.approved
+						? '<i class="bi bi-check2-all"></i>'
+						: '<i class="bi bi-x-lg"></i>'
 				);
-				typeSelect.selectpicker("refresh");
-				typeSelect.selectpicker("val", [response.type.id]);
 				initializeToast(
-					`Type "${response.type.id} - ${response.type.name}" was successfully added!`
+					`Resource was successfully ${
+						!response.data.approved ? "un" : ""
+					}approved!`
 				);
-				$("#type-modal").modal("hide");
 			} else {
-				resetErrors(form);
-				markErrors(form, response.errors);
+				initializeToast(`Resource wasn't successfully approved!`);
 			}
 		},
-		error: (error) => {
-			initializeToast(`Type wasn't successfully added/updated!`);
-			$("#type-modal").modal("hide");
-			console.error(error);
+		error: (xhr) => {
+			initializeToast(
+				`An error occurred (${xhr.responseJSON.message}). Please try again.`
+			);
+			console.error(xhr);
 		},
 	});
-});
-$(document).on("submit", "#category-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
-
-	$.ajax({
-		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
-		success: (response) => {
-			if (response.success) {
-				const categorySelect = $("select#category");
-				categorySelect.prepend(
-					`<option value="${response.category.id}">${response.category.name}</option>`
-				);
-				categorySelect.selectpicker("refresh");
-				categorySelect.selectpicker("val", [
-					...categorySelect.selectpicker("val"),
-					response.category.id,
-				]);
-				initializeToast(
-					`Category "${response.category.id} - ${response.category.name}" was successfully added!`
-				);
-				$("#category-modal").modal("hide");
-			} else {
-				resetErrors(form);
-				markErrors(form, response.errors);
-			}
-		},
-		error: (error) => {
-			initializeToast(`Category wasn't successfully added/updated!`);
-			$("#category-modal").modal("hide");
-			console.error(error);
-		},
-	});
-});
-$(document).on("submit", "#resource-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
-
-	$.ajax({
-		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
-		success: (response) => {
-			if (response.success) {
-				const resourceCard = $(`div[data-id="${response.resource.id}"]`);
-				if (resourceCard.length !== 0) {
-					resourceCard.replaceWith(createResourceCard(response.resource));
-					initializeToast(
-						`Resource "${response.resource.id} - ${response.resource.title}" was successfully updated!`
-					);
-				} else {
-					const cardsContainer = $(".cards");
-					const totalNumberOfResourcesSpan = $("#total-number-of-items");
-					const currentNumberOfResources =
-						Number(totalNumberOfResourcesSpan.text().slice(1, -1)) + 1;
-					totalNumberOfResourcesSpan.text(`(${currentNumberOfResources})`);
-					if (currentNumberOfResources === 1) {
-						cardsContainer.html(createResourceCard(response.resource));
-					} else {
-						cardsContainer.prepend(createResourceCard(response.resource));
-					}
-					initializeToast(
-						`Resource "${response.resource.id} - ${response.resource.title}" was successfully added!`
-					);
-				}
-				$("#resource-modal").modal("hide");
-			} else {
-				resetErrors(form);
-				markErrors(form, response.errors);
-			}
-		},
-		error: (error) => {
-			initializeToast(`Resource wasn't successfully added/updated!`);
-			$("#resource-modal").modal("hide");
-			console.error(error);
-		},
-	});
-});
-$(document).on("submit", "#confirm-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
-
-	$.ajax({
-		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
-		success: (response) => {
-			if (response.success) {
-				const resourceCard = $(`div[data-id="${response.resource_id}"]`);
-				const totalNumberOfResourcesSpan = $("#total-number-of-items");
-				const currentNumberOfResources =
-					Number(totalNumberOfResourcesSpan.text().slice(1, -1)) - 1;
-				totalNumberOfResourcesSpan.text(`(${currentNumberOfResources})`);
-				if (currentNumberOfResources === 0) {
-					resourceCard.replaceWith(
-						'<p class="text-center my-2">There are no resources.</p>'
-					);
-				} else {
-					resourceCard.remove();
-				}
-				initializeToast(`Resource was successfully deleted!`);
-			} else {
-				initializeToast(`Resource wasn't successfully deleted!`);
-			}
-		},
-		error: (error) => {
-			initializeToast(`Resource wasn't successfully deleted!`);
-			console.error(error);
-		},
-		complete: () => {
-			$("#confirm-modal").modal("hide");
-		},
-	});
-});
+}
 
 function createResourceModal(resourceData = null) {
 	const submitUrl = `/admin/resources/${
@@ -349,7 +342,14 @@ function createResourceCard(resourceData) {
 			<div class="card-header d-flex flex-wrap align-items-center justify-content-between rg-2 cg-2">
 				<div class="d-flex rg-2 cg-2">
 					<p class="mb-0">#${resourceData.id}</p>
-					<p class="mb-0">${resourceData.created}</p>
+					<p class="mb-0">
+						${resourceData.created}
+						${
+							resourceData.created !== resourceData.modified
+								? `(<span class="font-italic">${resourceData.modified}</span>)`
+								: ""
+						}
+					</p>
 				</div>
 				<div class="d-flex align-items-center cg-1">
 					<button class="toggle-approved-btn btn btn-light btn-sm">

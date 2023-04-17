@@ -1,3 +1,34 @@
+function handleAjaxFormSubmit(
+	formId,
+	successCallback,
+	errorCallback,
+	completeCallback = null
+) {
+	$(document).on("submit", formId, function (event) {
+		event.preventDefault();
+		const form = $(formId);
+
+		const ajaxOptions = {
+			type: "POST",
+			url: form.attr("action"),
+			data: form.serialize(),
+			success: (response) => {
+				successCallback(form, response);
+			},
+			error: (xhr) => {
+				errorCallback(form, xhr);
+			},
+		};
+		if (completeCallback) {
+			ajaxOptions["complete"] = (xhr) => {
+				completeCallback(form, xhr);
+			};
+		}
+
+		$.ajax(ajaxOptions);
+	});
+}
+
 function createConfirmationModal(options) {
 	return `
 		<div id="confirm-modal" class="modal fade">
@@ -121,6 +152,20 @@ function createEmptyRow(message) {
 			<td colspan="100%" class="text-center">${message}</td>
 		</tr>
 	`;
+}
+
+function createEmptyParagraph(message) {
+	return `
+		<p class="text-center my-2">${message}</p>
+	`;
+}
+
+function updateTotalNumberOfItems(amount) {
+	const totalNumberOfItemsSpan = $("#total-number-of-items");
+	const currentNumberOfItems =
+		Number(totalNumberOfItemsSpan.text().slice(1, -1)) + amount;
+	totalNumberOfItemsSpan.text(`(${currentNumberOfItems})`);
+	return currentNumberOfItems;
 }
 
 function resetErrors(form) {

@@ -1,25 +1,18 @@
 <?php
 
 App::uses('AppController', 'Controller');
+App::uses('CakeTime', 'Utility');
 
 class UsersController extends AppController {
 	public function isAuthorized($user) {
 		if ($this->action === 'logout') {
 			return true;
 		}
-
 		return parent::isAuthorized($user);
 	}
 
 	public function beforeFilter() {
 		parent::beforeFilter();
-
-		if ($this->request->is('ajax')) {
-			$this->autoRender = false;
-			$this->response->type('json');
-			$this->Security->validatePost = false;
-		}
-
 		$this->Auth->allow(array(
 			'login',
 			'registration',
@@ -45,16 +38,7 @@ class UsersController extends AppController {
 			array(),
 			array('id', 'username', 'email', 'approved', 'role', 'created', 'modified')
 		);
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$success['User']['created'] = date('d/m/Y H:i:s', strtotime($success['User']['created']));
-			$success['User']['modified'] = date('d/m/Y H:i:s', strtotime($success['User']['modified']));
-			$result['user'] = $success['User'];
-		} else {
-			$result['errors'] = $this->User->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -62,8 +46,7 @@ class UsersController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->User->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('User');
 			return $this->response;
 		}
 
@@ -74,16 +57,7 @@ class UsersController extends AppController {
 			array(),
 			array('id', 'username', 'email', 'approved', 'role', 'created', 'modified')
 		);
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$success['User']['created'] = date('d/m/Y H:i:s', strtotime($success['User']['created']));
-			$success['User']['modified'] = date('d/m/Y H:i:s', strtotime($success['User']['modified']));
-			$result['user'] = $success['User'];
-		} else {
-			$result['errors'] = $this->User->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -91,13 +65,15 @@ class UsersController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->User->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('User');
 			return $this->response;
 		}
 
 		$success = $this->User->delete($id);
-		$this->response->body(json_encode(array('success' => (bool) $success, 'user_id' => $id)));
+		$this->response->body(json_encode(array(
+			'success' => $success,
+			'data' => array('id' => $id)
+		)));
 		return $this->response;
 	}
 
@@ -105,8 +81,7 @@ class UsersController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->User->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('User');
 			return $this->response;
 		}
 
@@ -116,8 +91,10 @@ class UsersController extends AppController {
 
 		$this->response->body(json_encode(array(
 			'success' => (bool) $success,
-			'user_id' => $id,
-			'approved' => $success ? !$approved : $approved
+			'data' => array(
+				'id' => $id,
+				'approved' => $success ? !$approved : $approved
+			)
 		)));
 		return $this->response;
 	}
@@ -152,14 +129,26 @@ class UsersController extends AppController {
 		return $this->redirect($this->Auth->logout());
 	}
 
-	protected function getPaginatedUsers($limit = 15) {
+	private function getPaginatedUsers($limit = 15) {
 		$this->Paginator->settings = array(
 			'recursive' => -1,
-			'fields' => array('id', 'username', 'email', 'role', 'created', 'approved'),
+			'fields' => array('id', 'username', 'email', 'role', 'created', 'modified', 'approved'),
 			'limit' => $limit,
 			'maxLimit' => $limit,
 			'order' => array('User.created' => 'desc')
 		);
 		return $this->Paginator->paginate('User');
+	}
+
+	private function generateResponse($resource) {
+		$result = array('success' => (bool) $resource);
+		if ($resource) {
+			$resource['User']['created'] = CakeTime::format('d/m/Y H:i:s', $resource['User']['created']);
+			$resource['User']['modified'] = CakeTime::format('d/m/Y H:i:s', $resource['User']['modified']);
+			$result['data'] = $resource['User'];
+		} else {
+			$result['errors'] = $this->User->validationErrors;
+		}
+		$this->response->body(json_encode($result));
 	}
 }

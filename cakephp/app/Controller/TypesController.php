@@ -3,16 +3,6 @@
 App::uses('AppController', 'Controller');
 
 class TypesController extends AppController {
-	public function beforeFilter() {
-		parent::beforeFilter();
-
-		if ($this->request->is('ajax')) {
-			$this->autoRender = false;
-			$this->response->type('json');
-			$this->Security->validatePost = false;
-		}
-	}
-
 	public function admin_index() {
 		$this->layout = 'admin';
 		$this->set(array(
@@ -26,20 +16,8 @@ class TypesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		$this->Type->clear();
-		$success = $this->Type->save(
-			$this->request->data,
-			true,
-			array(),
-			array('id', 'name')
-		);
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$result['type'] = $success['Type'];
-		} else {
-			$result['errors'] = $this->Type->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$success = $this->Type->save($this->request->data);
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -47,26 +25,13 @@ class TypesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->Type->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('Type');
 			return $this->response;
 		}
 
 		$this->Type->id = $id;
-		$success = $this->Type->save(
-			$this->request->data,
-			true,
-			array(),
-			array('id', 'name')
-		);
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$result['type'] = $success['Type'];
-		} else {
-			$result['errors'] = $this->Type->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$success = $this->Type->save($this->request->data);
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -74,13 +39,17 @@ class TypesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->Type->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('Type');
 			return $this->response;
 		}
 
 		$success = $this->Type->delete($id);
-		$this->response->body(json_encode(array('success' => (bool) $success, 'type_id' => $id)));
+		$this->response->body(json_encode(array(
+			'success' => $success,
+			'data' => array(
+				'id' => $id
+			)
+		)));
 		return $this->response;
 	}
 
@@ -93,5 +62,15 @@ class TypesController extends AppController {
 			'order' => array('Type.created' => 'desc')
 		);
 		return $this->Paginator->paginate('Type');
+	}
+
+	protected function generateResponse($resource) {
+		$result = array('success' => (bool) $resource);
+		if ($resource) {
+			$result['data'] = $resource['Type'];
+		} else {
+			$result['errors'] = $this->Type->validationErrors;
+		}
+		$this->response->body(json_encode($result));
 	}
 }

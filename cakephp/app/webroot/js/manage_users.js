@@ -1,38 +1,9 @@
 const addUserButton = $("#add-user-btn");
-addUserButton.click(() => {
-	initializeModal(createUserModal());
-});
-
 const usersTable = $("#users-table");
-usersTable.on("click", ".toggle-approved-btn", (event) => {
-	const userId = $(event.currentTarget).closest("tr").data("id");
 
-	$.ajax({
-		type: "POST",
-		url: `/admin/users/approve/${userId}`,
-		data: `data%5B_Token%5D%5Bkey%5D=${csrfToken}`,
-		success: (response) => {
-			if (response.success) {
-				const userRow = $(`tr[data-id="${response.user_id}"]`);
-				userRow.find("td:nth-child(6)").text(response.approved);
-				$(event.currentTarget).html(
-					response.approved
-						? '<i class="bi bi-check2-all"></i>'
-						: '<i class="bi bi-x-lg"></i>'
-				);
-				initializeToast(
-					`User was successfully ${!response.approved ? "un" : ""}approved!`
-				);
-			} else {
-				initializeToast(`User wasn't successfully approved!`);
-			}
-		},
-		error: (error) => {
-			initializeToast(`User wasn't successfully approved!`);
-			console.error(error);
-		},
-	});
-});
+addUserButton.click(() => initializeModal(createUserModal()));
+
+usersTable.on("click", ".toggle-approved-btn", handleUserApprove);
 usersTable.on("click", ".edit-user-btn", (event) => {
 	const userData = $(event.currentTarget).closest("tr").data("user");
 	initializeModal(createUserModal(userData));
@@ -47,84 +18,108 @@ usersTable.on("click", ".delete-user-btn", (event) => {
 	);
 });
 
-$(document).on("submit", "#user-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
+handleAjaxFormSubmit("#user-form", handleUserSuccess, handleUserError);
+handleAjaxFormSubmit(
+	"#confirm-form",
+	handleUserDeleteSuccess,
+	handleUserDeleteError
+);
+
+function handleUserSuccess(form, response) {
+	if (response.success) {
+		const item = $(`tr[data-id="${response.data.id}"]`);
+		const newItem = createUserRow(response.data);
+		if (item.length === 0) {
+			const container = $("#users-table tbody");
+			const currentNumberOfItems = updateTotalNumberOfItems(1);
+			if (currentNumberOfItems === 1) {
+				container.html(newItem);
+			} else {
+				container.prepend(newItem);
+			}
+			initializeToast(
+				`User (id: ${response.data.id}, username: ${response.data.username}) successfully added.`
+			);
+		} else {
+			item.replaceWith(newItem);
+			initializeToast(
+				`User (id: ${response.data.id}, username: ${response.data.username}) successfully updated.`
+			);
+		}
+		$("#user-modal").modal("hide");
+	} else {
+		resetErrors(form);
+		markErrors(form, response.errors);
+	}
+}
+
+function handleUserError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#user-modal").modal("hide");
+	console.error(xhr.responseJSON.message);
+}
+
+function handleUserDeleteSuccess(form, response) {
+	if (response.success) {
+		const item = $(`tr[data-id="${response.data.id}"]`);
+		const currentNumberOfItems = updateTotalNumberOfItems(-1);
+		if (currentNumberOfItems === 0) {
+			item.replaceWith(createEmptyRow("There are no users."));
+		} else {
+			item.remove();
+		}
+		initializeToast(`User (id: ${response.data.id}) successfully deleted.`);
+	} else {
+		initializeToast(
+			`User (id: ${response.data.id}) wasn't successfully deleted.`
+		);
+	}
+	$("#confirm-modal").modal("hide");
+}
+
+function handleUserDeleteError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#confirm-modal").modal("hide");
+	console.error(xhr);
+}
+
+function handleUserApprove(event) {
+	const userId = $(event.currentTarget).closest("tr").data("id");
 
 	$.ajax({
 		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
+		url: `/admin/users/approve/${userId}`,
+		data: `data%5B_Token%5D%5Bkey%5D=${csrfToken}`,
 		success: (response) => {
 			if (response.success) {
-				const userRow = $(`tr[data-id="${response.user.id}"]`);
-				if (userRow.length !== 0) {
-					userRow.replaceWith(createUserRow(response.user));
-					initializeToast(
-						`User "${response.user.id} - ${response.user.username}" was successfully updated!`
-					);
-				} else {
-					const tableTbody = $("#users-table tbody");
-					const totalNumberOfUsersSpan = $("#total-number-of-items");
-					const currentNumberOfUsers =
-						Number(totalNumberOfUsersSpan.text().slice(1, -1)) + 1;
-					totalNumberOfUsersSpan.text(`(${currentNumberOfUsers})`);
-					if (currentNumberOfUsers === 1) {
-						tableTbody.html(createUserRow(response.user));
-					} else {
-						tableTbody.prepend(createUserRow(response.user));
-					}
-					initializeToast(
-						`User "${response.user.id} - ${response.user.username}" was successfully added!`
-					);
-				}
-				$("#user-modal").modal("hide");
+				const item = $(`tr[data-id="${response.data.id}"]`);
+				item.find("td:nth-child(6)").text(response.data.approved);
+				$(event.currentTarget).html(
+					response.data.approved
+						? '<i class="bi bi-check2-all"></i>'
+						: '<i class="bi bi-x-lg"></i>'
+				);
+				initializeToast(
+					`User (id: ${response.data.id}) was successfully ${
+						!response.data.approved ? "un" : ""
+					}approved!`
+				);
 			} else {
-				resetErrors(form);
-				markErrors(form, response.errors);
+				initializeToast(
+					`User (id: ${response.data.id}) wasn't successfully approved!`
+				);
 			}
 		},
-		error: (error) => {
-			initializeToast(`User wasn't successfully added/updated!`);
-			$("#user-modal").modal("hide");
-			console.error(error);
+		error: (xhr) => {
+			initializeToast("An error occurred. Please try again.");
+			console.error(xhr);
 		},
 	});
-});
-$(document).on("submit", "#confirm-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
-
-	$.ajax({
-		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
-		success: (response) => {
-			if (response.success) {
-				const userRow = $(`tr[data-id="${response.user_id}"]`);
-				const totalNumberOfUsersSpan = $("#total-number-of-items");
-				const currentNumberOfUsers =
-					Number(totalNumberOfUsersSpan.text().slice(1, -1)) - 1;
-				totalNumberOfUsersSpan.text(`(${currentNumberOfUsers})`);
-				if (currentNumberOfUsers === 0) {
-					userRow.replaceWith(createEmptyRow("There are no users."));
-				} else {
-					userRow.remove();
-				}
-				initializeToast(`User was successfully deleted!`);
-			} else {
-				initializeToast(`User wasn't successfully deleted!`);
-			}
-		},
-		error: (error) => {
-			initializeToast(`User wasn't successfully deleted!`);
-			console.error(error);
-		},
-		complete: () => {
-			$("#confirm-modal").modal("hide");
-		},
-	});
-});
+}
 
 function createUserModal(userData = null) {
 	const submitUrl = `/admin/users/${userData ? "edit/" + userData.id : "add"}`;
@@ -147,7 +142,6 @@ function createUserModal(userData = null) {
 								<input name="data[User][username]"
 									   class="form-control"
 									   placeholder="Enter a username..."
-									   autofocus="autofocus"
 									   maxlength="32"
 									   type="text"
 									   id="username"
@@ -172,7 +166,11 @@ function createUserModal(userData = null) {
 
 							<div class="form-group required">
 								<label for="role">Role</label>
-								<select name="data[User][role]" id="role" class="form-control">
+								<select name="data[User][role]"
+										id="role"
+										class="selectpicker"
+										data-width="100%"
+										required="required">
 									<option value="user"${
 										userData && userData["role"] === "user" ? " selected" : ""
 									}>User</option>
@@ -236,7 +234,14 @@ function createUserRow(user) {
 			<td>${user.username}</td>
 			<td><pre class="m-0">${user.email}</pre></td>
 			<td class="text-center">${user.role}</td>
-			<td class="text-center">${user.created}</td>
+			<td class="text-center">
+				${user.created}
+				${
+					user.created !== user.modified
+						? `<br>(<span class="font-italic">${user.modified}</span>)`
+						: ""
+				}
+			</td>
 			<td class="text-center">${user.approved}</td>
 			<td class="text-center d-flex justify-content-center align-items-center cg-1">
 				<button class="toggle-approved-btn btn btn-light btn-sm">

@@ -1,9 +1,10 @@
 const addTypeButton = $("#add-type-btn");
+const typesTable = $("#types-table");
+
 addTypeButton.click(() => {
 	initializeModal(createTypeModal());
 });
 
-const typesTable = $("#types-table");
 typesTable.on("click", ".edit-type-btn", (event) => {
 	const typeData = $(event.currentTarget).closest("tr").data("type");
 	initializeModal(createTypeModal(typeData));
@@ -18,86 +19,74 @@ typesTable.on("click", ".delete-type-btn", (event) => {
 	);
 });
 
-$(document).on("submit", "#type-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
+handleAjaxFormSubmit("#type-form", handleTypeSuccess, handleTypeError);
+handleAjaxFormSubmit(
+	"#confirm-form",
+	handleTypeDeleteSuccess,
+	handleTypeDeleteError
+);
 
-	$.ajax({
-		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
-		success: (response) => {
-			console.log(response);
-			if (response.success) {
-				const typeRow = $(`tr[data-id="${response.type.id}"]`);
-				if (typeRow.length !== 0) {
-					typeRow.replaceWith(createTypeRow(response.type));
-					initializeToast(
-						`Type "${response.type.id} - ${response.type.name}" was successfully updated!`
-					);
-				} else {
-					const tableTbody = $("#types-table tbody");
-					const totalNumberOfTypesSpan = $("#total-number-of-items");
-					const currentNumberOfTypes =
-						Number(totalNumberOfTypesSpan.text().slice(1, -1)) + 1;
-					totalNumberOfTypesSpan.text(`(${currentNumberOfTypes})`);
-					if (currentNumberOfTypes === 1) {
-						tableTbody.html(createTypeRow(response.type));
-					} else {
-						tableTbody.prepend(createTypeRow(response.type));
-					}
-					initializeToast(
-						`Type "${response.type.id} - ${response.type.name}" was successfully added!`
-					);
-				}
-				$("#type-modal").modal("hide");
+function handleTypeSuccess(form, response) {
+	if (response.success) {
+		const item = $(`tr[data-id="${response.data.id}"]`);
+		const newItem = createTypeRow(response.data);
+		if (item.length === 0) {
+			const container = $("#types-table tbody");
+			const currentNumberOfItems = updateTotalNumberOfItems(1);
+			if (currentNumberOfItems === 1) {
+				container.html(newItem);
 			} else {
-				resetErrors(form);
-				markErrors(form, response.errors);
+				container.prepend(newItem);
 			}
-		},
-		error: (error) => {
-			initializeToast(`Type wasn't successfully added/updated!`);
-			$("#type-modal").modal("hide");
-			console.error(error);
-		},
-	});
-});
-$(document).on("submit", "#confirm-form", (event) => {
-	event.preventDefault();
-	const form = $(event.currentTarget);
+			initializeToast(
+				`Type (id: ${response.data.id}, name: ${response.data.name}) successfully added.`
+			);
+		} else {
+			item.replaceWith(newItem);
+			initializeToast(
+				`Type (id: ${response.data.id}, name: ${response.data.name}) successfully updated.`
+			);
+		}
+		$("#type-modal").modal("hide");
+	} else {
+		resetErrors(form);
+		markErrors(form, response.errors);
+	}
+}
 
-	$.ajax({
-		type: "POST",
-		url: form.attr("action"),
-		data: form.serialize(),
-		success: (response) => {
-			if (response.success) {
-				const typeRow = $(`tr[data-id="${response.type_id}"]`);
-				const totalNumberOfTypesSpan = $("#total-number-of-items");
-				const currentNumberOfTypes =
-					Number(totalNumberOfTypesSpan.text().slice(1, -1)) - 1;
-				totalNumberOfTypesSpan.text(`(${currentNumberOfTypes})`);
+function handleTypeError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#type-modal").modal("hide");
+	console.error(xhr);
+}
 
-				if (currentNumberOfTypes === 0) {
-					typeRow.replaceWith(createEmptyRow("There are no types."));
-				} else {
-					typeRow.remove();
-				}
-				initializeToast(`Type was successfully deleted!`);
-			} else {
-				initializeToast(`Type wasn't successfully deleted!`);
-			}
-		},
-		error: (error) => {
-			initializeToast(`Type wasn't successfully deleted!`);
-			console.error(error);
-		},
-		complete: () => {
-			$("#confirm-modal").modal("hide");
-		},
-	});
-});
+function handleTypeDeleteSuccess(form, response) {
+	if (response.success) {
+		const item = $(`tr[data-id="${response.data.id}"]`);
+		const currentNumberOfItems = updateTotalNumberOfItems(-1);
+		if (currentNumberOfItems === 0) {
+			item.replaceWith(createEmptyRow("There are no types."));
+		} else {
+			item.remove();
+		}
+		initializeToast(`Type (id: ${response.data.id}) successfully deleted.`);
+	} else {
+		initializeToast(
+			`Type (id: ${response.data.id}) wasn't successfully deleted.`
+		);
+	}
+	$("#confirm-modal").modal("hide");
+}
+
+function handleTypeDeleteError(form, xhr) {
+	initializeToast(
+		`An error occurred (${xhr.responseJSON.message}). Please try again.`
+	);
+	$("#confirm-modal").modal("hide");
+	console.error(xhr);
+}
 
 function createTypeRow(type) {
 	return `

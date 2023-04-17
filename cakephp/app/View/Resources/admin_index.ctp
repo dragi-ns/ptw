@@ -17,7 +17,7 @@ $this->Html->script('manage_resources', array('inline' => false));
 	<button id="add-resource-btn" class="btn btn-primary">Add Resource</button>
 </div>
 
-<div class="cards d-flex flex-column rg-3 mb-3">
+<div id="cards-container" class="cards d-flex flex-column rg-3 mb-3">
 	<?php if ($totalNumOfResources === 0): ?>
 		<p class="text-center my-2">There are no resources.</p>
 	<?php else: ?>
@@ -38,7 +38,12 @@ $this->Html->script('manage_resources', array('inline' => false));
 				<div class="card-header d-flex flex-wrap align-items-center justify-content-between rg-2 cg-2">
 					<div class="d-flex rg-2 cg-2">
 						<p class="mb-0">#<?php echo $resource['Resource']['id']; ?></p>
-						<p class="mb-0"><?php echo $this->Time->format('d/m/Y H:i:s', $resource['Resource']['created'], new DateTimeZone('Europe/Belgrade')); ?></p>
+						<p class="mb-0">
+							<?php echo $this->Time->format('d/m/Y H:i:s', $resource['Resource']['created']); ?>
+							<?php if ($resource['Resource']['created'] !== $resource['Resource']['modified']): ?>
+								(<span class="font-italic"><?php echo $this->Time->format('d/m/Y H:i:s', $resource['Resource']['modified']); ?></span>)
+							<?php endif; ?>
+						</p>
 					</div>
 					<div class="d-flex align-items-center justify-content-end cg-1">
 						<button class="toggle-approved-btn btn btn-light btn-sm">

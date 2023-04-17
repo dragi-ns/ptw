@@ -1,19 +1,10 @@
 <?php
 
 App::uses('AppController', 'Controller');
+App::uses('CakeTime', 'Utility');
 
 class ResourcesController extends AppController {
 	public $uses = array('Resource', 'Type', 'Category');
-
-	public function beforeFilter() {
-		parent::beforeFilter();
-
-		if ($this->request->is('ajax')) {
-			$this->autoRender = false;
-			$this->response->type('json');
-			$this->Security->validatePost = false;
-		}
-	}
 
 	public function admin_index() {
 		$this->layout = 'admin';
@@ -37,21 +28,7 @@ class ResourcesController extends AppController {
 
 		$this->Resource->clear();
 		$success = $this->Resource->saveAll($this->request->data, array('deep' => true));
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$result['resource'] = $success['Resource'];
-			$result['resource']['created'] = date('d/m/Y H:i:s', strtotime($success['Resource']['created']));
-			$result['resource']['modified'] = date('d/m/Y H:i:s', strtotime($success['Resource']['modified']));
-			$result['resource']['type'] = $success['Type'];
-			$result['resource']['categories'] = array_map(
-				function ($category) { return array('id' => $category['id'], 'name' => $category['name']); },
-				$success['Category']
-			);
-		} else {
-			$result['errors'] = $this->Resource->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -59,28 +36,13 @@ class ResourcesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->Resource->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('Resource');
 			return $this->response;
 		}
 
 		$this->Resource->id = $id;
 		$success = $this->Resource->saveAll($this->request->data, array('deep' => true));
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$result['resource'] = $success['Resource'];
-			$result['resource']['created'] = date('d/m/Y H:i:s', strtotime($success['Resource']['created']));
-			$result['resource']['modified'] = date('d/m/Y H:i:s', strtotime($success['Resource']['modified']));
-			$result['resource']['type'] = $success['Type'];
-			$result['resource']['categories'] = array_map(
-				function ($category) { return array('id' => $category['id'], 'name' => $category['name']); },
-				$success['Category']
-			);
-		} else {
-			$result['errors'] = $this->Resource->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -88,13 +50,17 @@ class ResourcesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->Resource->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('Resource');
 			return $this->response;
 		}
 
 		$success = $this->Resource->delete($id);
-		$this->response->body(json_encode(array('success' => (bool) $success, 'resource_id' => $id)));
+		$this->response->body(json_encode(array(
+			'success' => $success,
+			'data' => array(
+				'id' => $id
+			)
+		)));
 		return $this->response;
 	}
 
@@ -102,8 +68,7 @@ class ResourcesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->Resource->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('Resource');
 			return $this->response;
 		}
 
@@ -113,8 +78,10 @@ class ResourcesController extends AppController {
 
 		$this->response->body(json_encode(array(
 			'success' => (bool) $success,
-			'resource_id' => $id,
-			'approved' => $success ? !$approved : $approved
+			'data' => array(
+				'id' => $id,
+				'approved' => $success ? !$approved : $approved
+			)
 		)));
 		return $this->response;
 	}
@@ -127,5 +94,22 @@ class ResourcesController extends AppController {
 			'order' => array('Resource.created' => 'desc')
 		);
 		return $this->Paginator->paginate('Resource');
+	}
+
+	protected function generateResponse($resource) {
+		$result = array('success' => (bool) $resource);
+		if ($resource) {
+			$result['data'] = $resource['Resource'];
+			$result['data']['created'] = CakeTime::format('d/m/Y H:i:s', $resource['Resource']['created']);
+			$result['data']['modified'] = CakeTime::format('d/m/Y H:i:s', $resource['Resource']['modified']);
+			$result['data']['type'] = $resource['Type'];
+			$result['data']['categories'] = array_map(
+				function ($category) { return array('id' => $category['id'], 'name' => $category['name']); },
+				$resource['Category']
+			);
+		} else {
+			$result['errors'] = $this->Resource->validationErrors;
+		}
+		$this->response->body(json_encode($result));
 	}
 }

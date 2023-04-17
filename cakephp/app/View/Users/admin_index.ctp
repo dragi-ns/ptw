@@ -5,6 +5,8 @@
  * @var integer $perPage
  */
 
+$this->Html->css('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css', array('inline' => false));
+$this->Html->script('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js', array('inline' => false));
 $this->Html->script('manage_users', array('inline' => false));
 ?>
 
@@ -38,40 +40,46 @@ $this->Html->script('manage_users', array('inline' => false));
 			<th class="actions-col text-center">Actions</th>
 		</tr>
 		</thead>
-		<tbody>
-		<?php if ($totalNumOfUsers === 0): ?>
-			<tr>
-				<td colspan="100%" class="text-center">There are no users.</td>
-			</tr>
-		<?php else: ?>
-			<?php foreach ($users as $user): ?>
-				<tr data-id="<?php echo $user['User']['id']; ?>" data-user='<?php echo h(json_encode($user['User'])); ?>'>
-					<td class="text-center"><?php echo h($user['User']['id']); ?></td>
-					<td><?php echo h($user['User']['username']); ?></td>
-					<td><pre class="m-0"><?php echo h($user['User']['email']); ?></pre></td>
-					<td class="text-center"><?php echo h($user['User']['role']); ?></td>
-					<td class="text-center"><?php echo $this->Time->format('d/m/Y H:i:s', $user['User']['created'], new DateTimeZone('Europe/Belgrade')); ?></td>
-					<td class="text-center"><?php echo $user['User']['approved'] ? 'true' : 'false'; ?></td>
-					<td class="text-center d-flex justify-content-center align-items-center cg-1">
-						<button class="toggle-approved-btn btn btn-light btn-sm">
-							<span>
-								<?php echo $user['User']['approved'] ? '<i class="bi bi-check2-all"></i>' : '<i class="bi bi-x-lg"></i>'; ?>
-							</span>
-						</button>
-						<button class="edit-user-btn btn btn-warning btn-sm">
-							<span>
-								<i class="bi bi-pencil-fill"></i>
-							</span>
-						</button>
-						<button class="delete-user-btn btn btn-danger btn-sm">
-							<span>
-								<i class="bi bi-trash-fill"></i>
-							</span>
-						</button>
-					</td>
+		<tbody id="user-container">
+			<?php if ($totalNumOfUsers === 0): ?>
+				<tr>
+					<td colspan="100%" class="text-center">There are no users.</td>
 				</tr>
-			<?php endforeach; ?>
-		<?php endif; ?>
+			<?php else: ?>
+				<?php foreach ($users as $user): ?>
+					<tr data-id="<?php echo $user['User']['id']; ?>" data-user='<?php echo h(json_encode($user['User'])); ?>'>
+						<td class="text-center"><?php echo h($user['User']['id']); ?></td>
+						<td><?php echo h($user['User']['username']); ?></td>
+						<td><pre class="m-0"><?php echo h($user['User']['email']); ?></pre></td>
+						<td class="text-center"><?php echo h($user['User']['role']); ?></td>
+						<td class="text-center">
+							<?php echo $this->Time->format('d/m/Y H:i:s', $user['User']['created']); ?>
+							<?php if ($user['User']['created'] !== $user['User']['modified']): ?>
+								<br>
+								(<span class="font-italic"><?php echo $this->Time->format('d/m/Y H:i:s', $user['User']['modified']); ?></span>)
+							<?php endif; ?>
+						</td>
+						<td class="text-center"><?php echo $user['User']['approved'] ? 'true' : 'false'; ?></td>
+						<td class="text-center">
+							<button class="toggle-approved-btn btn btn-light btn-sm">
+								<span>
+									<?php echo $user['User']['approved'] ? '<i class="bi bi-check2-all"></i>' : '<i class="bi bi-x-lg"></i>'; ?>
+								</span>
+							</button>
+							<button class="edit-user-btn btn btn-warning btn-sm">
+								<span>
+									<i class="bi bi-pencil-fill"></i>
+								</span>
+							</button>
+							<button class="delete-user-btn btn btn-danger btn-sm">
+								<span>
+									<i class="bi bi-trash-fill"></i>
+								</span>
+							</button>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			<?php endif; ?>
 		</tbody>
 	</table>
 </div>

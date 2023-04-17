@@ -86,6 +86,11 @@ class AppController extends Controller {
 
 	public function beforeFilter() {
 		parent::beforeFilter();
+		if ($this->request->is('ajax')) {
+			$this->autoRender = false;
+			$this->response->type('json');
+			$this->Security->validatePost = false;
+		}
 		$this->Auth->allow(array('index', 'view'));
 	}
 
@@ -95,5 +100,13 @@ class AppController extends Controller {
 
 	protected function isAdmin() {
 		return $this->Auth->user('role') === 'admin';
+	}
+
+	protected function generateNotFoundResponse($resourceName) {
+		$this->response->statusCode(404);
+		$this->response->body(json_encode(array(
+			'success' => false,
+			'message' => $resourceName . ' not found.'
+		)));
 	}
 }

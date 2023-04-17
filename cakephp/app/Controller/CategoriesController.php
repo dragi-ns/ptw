@@ -3,16 +3,6 @@
 App::uses('AppController', 'Controller');
 
 class CategoriesController extends AppController {
-	public function beforeFilter() {
-		parent::beforeFilter();
-
-		if ($this->request->is('ajax')) {
-			$this->autoRender = false;
-			$this->response->type('json');
-			$this->Security->validatePost = false;
-		}
-	}
-
 	public function admin_index() {
 		$this->layout = 'admin';
 		$this->set(array(
@@ -26,20 +16,8 @@ class CategoriesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		$this->Category->clear();
-		$success = $this->Category->save(
-			$this->request->data,
-			true,
-			array(),
-			array('id', 'name')
-		);
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$result['category'] = $success['Category'];
-		} else {
-			$result['errors'] = $this->Category->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$success = $this->Category->save( $this->request->data);
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -47,26 +25,13 @@ class CategoriesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->Category->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('Category');
 			return $this->response;
 		}
 
 		$this->Category->id = $id;
-		$success = $this->Category->save(
-			$this->request->data,
-			true,
-			array(),
-			array('id', 'name')
-		);
-		$result = array('success' => (bool) $success);
-		if ($success) {
-			$result['category'] = $success['Category'];
-		} else {
-			$result['errors'] = $this->Category->validationErrors;
-		}
-
-		$this->response->body(json_encode($result));
+		$success = $this->Category->save($this->request->data);
+		$this->generateResponse($success);
 		return $this->response;
 	}
 
@@ -74,13 +39,17 @@ class CategoriesController extends AppController {
 		$this->request->allowMethod(array('ajax'));
 
 		if (!$id || !$this->Category->exists($id)) {
-			$this->response->statusCode(404);
-			$this->response->body(json_encode(array('success' => false)));
+			$this->generateNotFoundResponse('Category');
 			return $this->response;
 		}
 
 		$success = $this->Category->delete($id);
-		$this->response->body(json_encode(array('success' => (bool) $success, 'category_id' => $id)));
+		$this->response->body(json_encode(array(
+			'success' => $success,
+			'data' => array(
+				'id' => $id
+			)
+		)));
 		return $this->response;
 	}
 
@@ -93,5 +62,15 @@ class CategoriesController extends AppController {
 			'order' => array('Category.created' => 'desc')
 		);
 		return $this->Paginator->paginate('Category');
+	}
+
+	protected function generateResponse($resource) {
+		$result = array('success' => (bool) $resource);
+		if ($resource) {
+			$result['data'] = $resource['Category'];
+		} else {
+			$result['errors'] = $this->Category->validationErrors;
+		}
+		$this->response->body(json_encode($result));
 	}
 }
