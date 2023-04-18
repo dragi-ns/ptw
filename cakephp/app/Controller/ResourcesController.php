@@ -6,6 +6,34 @@ App::uses('CakeTime', 'Utility');
 class ResourcesController extends AppController {
 	public $uses = array('Resource', 'Type', 'Category');
 
+	public function index() {
+		$this->loadModel('History');
+
+		$conditions = array();
+		$userId = $this->Auth->user('id');
+		if ($userId) {
+			$conditions['NOT'] = array(
+				'Resource.id' => $this->History->find('list', array(
+					'fields' => array('History.resource_id'),
+					'conditions' => array('History.user_id' => $userId)
+				))
+			);
+		}
+		$randomResource = $this->Resource->find('first', array(
+			'conditions' => $conditions,
+			'order' => 'RAND(NOW())',
+			'limit' => 1
+		));
+
+		if ($userId && !empty($randomResource)) {
+			$this->History->save(array(
+				'user_id' => $this->Auth->user('id'),
+				'resource_id' => $randomResource['Resource']['id']
+			));
+		}
+		$this->set('resource', $randomResource);
+	}
+
 	public function admin_index() {
 		$this->layout = 'admin';
 		$this->set([

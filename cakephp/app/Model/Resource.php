@@ -7,6 +7,14 @@ class Resource extends AppModel {
 
 	public $belongsTo = array('Type');
 
+	public $hasMany = array(
+		'History' => array(
+			'className' => 'History',
+			'foreignKey' => 'resource_id',
+			'dependent' => true
+		)
+	);
+
 	public $hasAndBelongsToMany = array('Category');
 
 	public $validate = array(

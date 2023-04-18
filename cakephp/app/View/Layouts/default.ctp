@@ -30,7 +30,7 @@
 )); ?>
 
 <main class="d-flex flex-column flex-grow-1 flex-shrink-0">
-	<div class="container py-4">
+	<div class="container py-4 h-100">
 		<?php echo $this->Flash->render() ?>
 
 		<?php echo $this->fetch('content'); ?>

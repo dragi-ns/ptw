@@ -54,6 +54,14 @@ body {
 	border-color: #dee2e6;
 }
 
+.resource .badge {
+	font-size: 0.9rem;
+}
+
+.resource p {
+	max-width: 1200px;
+}
+
 .rg-1 {
 	row-gap: 0.25rem;
 }

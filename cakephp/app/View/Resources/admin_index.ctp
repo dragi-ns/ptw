@@ -64,12 +64,7 @@ $this->Html->script('manage_resources', array('inline' => false));
 					</div>
 				</div>
 				<div class="card-body">
-					<div class="d-flex flex-wrap justify-content-start align-items-center rg-1 cg-1">
-						<span class="badge badge-pill badge-primary"><?php echo h($resource['Type']['name']); ?></span>
-						<?php foreach ($resource['Category'] as $category): ?>
-							<span class="badge badge-pill badge-info"><?php echo h($category['name']); ?></span>
-						<?php endforeach; ?>
-					</div>
+					<?php echo $this->element('tags', array('resource' => $resource)) ?>
 					<h5 class="card-title mt-2">
 						<a href="<?php echo $resource['Resource']['url']; ?>" target="_blank">
 							<?php echo h($resource['Resource']['title']); ?>
