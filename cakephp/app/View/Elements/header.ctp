@@ -37,7 +37,8 @@
 							</button>
 
 							<div class="dropdown-menu">
-								<a href="#" class="dropdown-item">History</a>
+								<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'history', 'admin' => false)); ?>"
+								   class="dropdown-item">History</a>
 								<a href="#" class="dropdown-item">Settings</a>
 								<div class="dropdown-divider"></div>
 								<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'logout', 'admin' => false)); ?>"

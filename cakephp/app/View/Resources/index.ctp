@@ -14,7 +14,7 @@
 		</h2>
 		<p class="mb-4"><?php echo h($resource['Resource']['description']); ?></p>
 		<div class="controls d-flex justify-content-end rg-2 cg-2">
-			<button id="toggle-favorite-btn" class="btn btn-light btn-lg">
+			<button class="toggle-favorite-btn btn btn-light btn-lg">
 				<i class="bi bi-heart text-danger"></i>
 			</button>
 			<button id="next-resource-btn" class="btn btn-light btn-lg">

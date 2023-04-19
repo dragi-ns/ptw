@@ -129,6 +129,37 @@ class UsersController extends AppController {
 		return $this->redirect($this->Auth->logout());
 	}
 
+	public function history() {
+		$this->loadModel('History');
+
+		$history = $this->Paginator->settings = array(
+			'conditions' => array('user_id' => $this->Auth->user('id')),
+			'contain' => array(
+				'Resource',
+				'Resource.Type',
+				'Resource.Category'
+			),
+			'limit' => 10,
+			'maxLimit' => 10,
+			'order' => array('History.created' => 'desc')
+		);
+		$this->set('history', $this->Paginator->paginate('History'));
+		$this->set('totalNumOfResources', $this->History->getCount());
+		$this->set('perPage', 10);
+
+		// $this->Paginator->settings = array(
+		// 	'conditions' => $conditions,
+		// 	'contain' => array(
+		// 		'User' => array('fields' => array('id', 'username')),
+		// 		'Movie' => array('fields' => array('id', 'title'))
+		// 	),
+		// 	'limit' => $limit,
+		// 	'maxLimit' => $limit,
+		// 	'order' => array('MovieReview.created' => 'desc')
+		// );
+		// return $this->Paginator->paginate('MovieReview');
+	}
+
 	private function getPaginatedUsers($limit = 15) {
 		$this->Paginator->settings = array(
 			'recursive' => -1,
