@@ -22,6 +22,11 @@
 			</button>
 
 			<div class="collapse navbar-collapse" id="navbarMenu">
+				<?php if ($this->here === '/'): ?>
+					<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
+						Filters
+					</button>
+				<?php endif; ?>
 				<div class="navbar-left d-flex flex-wrap align-items-center ml-auto">
 					<?php if ($isAuth): ?>
 						<?php if ($isAdmin): ?>

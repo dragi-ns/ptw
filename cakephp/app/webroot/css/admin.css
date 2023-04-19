@@ -44,13 +44,6 @@ textarea {
 	z-index: 1051 !important;
 }
 
-.bootstrap-select > .btn {
-	color: #495057 !important;
-	background-color: #ffffff;
-	border: 1px solid #ced4da;
-	border-radius: 0.25rem;
-}
-
 @media screen and (min-width: 768px) {
 	.admin-container {
 		height: 100%;

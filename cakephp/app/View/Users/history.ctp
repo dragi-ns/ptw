@@ -3,11 +3,18 @@
  * @var History[] $history
  * @var integer $totalNumOfResources
  * @var integer $perPage
+ * @var Category[] $categories
+ * @var integer[] $selectedCategoriesIds
+ * @var Type[] $types
+ * @var integer $selectedTypeId
  */
 ?>
 
-<div class="row no-gutters justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center cg-3 mb-3">
 	<h2>History <span id="total-number-of-items" class="text-muted">(<?php echo $totalNumOfResources; ?>)</span></h2>
+	<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
+		Filters
+	</button>
 </div>
 
 <div id="cards-container" class="cards d-flex flex-column rg-3 mb-3">
@@ -40,5 +47,14 @@
 echo $this->element('pagination', array(
 	'totalNum' => $totalNumOfResources,
 	'perPage' => $perPage
+));
+?>
+
+<?php
+echo $this->element('filters-modal', array(
+	'categories' => $categories,
+	'selectedCategoriesId' => $selectedCategoriesIds,
+	'types' => $types,
+	'selectedTypeId' => $selectedTypeId
 ));
 ?>

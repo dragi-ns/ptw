@@ -1,11 +1,15 @@
 <?php
 /**
  * @var Resource $resource
+ * @var Category[] $categories
+ * @var integer[] $selectedCategoriesIds
+ * @var Type[] $types
+ * @var integer $selectedTypeId
  */
 ?>
 
 <?php if (!empty($resource)): ?>
-	<div class="resource d-flex flex-column h-100 justify-content-center">
+	<div class="resource d-flex flex-column justify-content-md-center h-md-100 pb-lg-5">
 		<?php echo $this->element('tags', array('resource' => $resource)) ?>
 		<h2>
 			<a href="<?php echo $resource['Resource']['url']; ?>" target="_blank">
@@ -23,7 +27,18 @@
 		</div>
 	</div>
 <?php else: ?>
-	<div class="d-flex justify-content-center align-items-center h-100">
+	<div class="d-flex justify-content-center align-items-center h-md-100">
 		<p class="text-center" style="font-size: 1.5rem;">There are no more random resources.</p>
 	</div>
 <?php endif; ?>
+
+<?php
+if ($this->here === '/') {
+	echo $this->element('filters-modal', array(
+		'categories' => $categories,
+		'selectedCategoriesId' => $selectedCategoriesIds,
+		'types' => $types,
+		'selectedTypeId' => $selectedTypeId
+	));
+}
+?>

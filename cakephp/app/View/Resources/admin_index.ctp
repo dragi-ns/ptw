@@ -2,19 +2,25 @@
 /**
  * @var Resource[] $resources
  * @var Type[] $types
+ * @var integer $selectedTypeId
+ * @var integer $selectedStatus
  * @var Category[] $categories
+ * @var integer[] $selectedCategoriesIds
  * @var integer $totalNumOfResources
  * @var integer $perPage
  */
 
-$this->Html->css('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css', array('inline' => false));
-$this->Html->script('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js', array('inline' => false));
 $this->Html->script('manage_resources', array('inline' => false));
 ?>
 
 <div class="row no-gutters justify-content-between align-items-center mb-3">
 	<h2>Resources <span id="total-number-of-items" class="text-muted">(<?php echo $totalNumOfResources; ?>)</span></h2>
-	<button id="add-resource-btn" class="btn btn-primary">Add Resource</button>
+	<div class="d-flex cg-2">
+		<button id="add-resource-btn" class="btn btn-primary">Add Resource</button>
+		<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
+			Filters
+		</button>
+	</div>
 </div>
 
 <div id="cards-container" class="cards d-flex flex-column rg-3 mb-3">
@@ -84,7 +90,17 @@ echo $this->element('pagination', array(
 ));
 ?>
 
+<?php
+echo $this->element('filters-modal', array(
+	'categories' => $categories,
+	'selectedCategoriesId' => $selectedCategoriesIds,
+	'types' => $types,
+	'selectedTypeId' => $selectedTypeId,
+	'selectedStatus' => $selectedStatus,
+	'adminFilter' => true
+));
+?>
 <script>
-	const TYPES = JSON.parse('<?php echo json_encode($types); ?>');
-	const CATEGORIES = JSON.parse('<?php echo json_encode($categories); ?>');
+	const TYPES = JSON.parse('<?php echo json_encode(array_map(function ($typeName, $typeId) { return array('id' => $typeId, 'name' => $typeName); }, $types, array_keys($types))); ?>');
+	const CATEGORIES = JSON.parse('<?php echo json_encode(array_map(function ($categoryName, $categoryId) { return array('id' => $categoryId, 'name' => $categoryName); }, $categories, array_keys($categories))); ?>');
 </script>

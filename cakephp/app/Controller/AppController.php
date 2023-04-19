@@ -39,14 +39,12 @@ class AppController extends Controller {
 				'admin' => false
 			),
 			'loginRedirect' => array(
-				'controller' => 'pages',
-				'action' => 'display',
-				'home'
+				'controller' => 'resources',
+				'action' => 'index'
 			),
 			'logoutRedirect' => array(
-				'controller' => 'pages',
-				'action' => 'display',
-				'home'
+				'controller' => 'resources',
+				'action' => 'index',
 			),
 			'authenticate' => array(
 				'AppForm' => array(

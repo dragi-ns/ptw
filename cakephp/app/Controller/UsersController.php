@@ -5,7 +5,7 @@ App::uses('CakeTime', 'Utility');
 
 class UsersController extends AppController {
 	public function isAuthorized($user) {
-		if ($this->action === 'logout') {
+		if (in_array($this->action, array('history', 'logout'))) {
 			return true;
 		}
 		return parent::isAuthorized($user);
@@ -130,34 +130,39 @@ class UsersController extends AppController {
 	}
 
 	public function history() {
+		$this->loadModel('Category');
+		$this->loadModel('Type');
 		$this->loadModel('History');
 
-		$history = $this->Paginator->settings = array(
-			'conditions' => array('user_id' => $this->Auth->user('id')),
-			'contain' => array(
-				'Resource',
-				'Resource.Type',
-				'Resource.Category'
-			),
-			'limit' => 10,
-			'maxLimit' => 10,
-			'order' => array('History.created' => 'desc')
+		$conditions = array(
+			'user_id' => $this->Auth->user('id')
 		);
-		$this->set('history', $this->Paginator->paginate('History'));
-		$this->set('totalNumOfResources', $this->History->getCount());
-		$this->set('perPage', 10);
 
-		// $this->Paginator->settings = array(
-		// 	'conditions' => $conditions,
-		// 	'contain' => array(
-		// 		'User' => array('fields' => array('id', 'username')),
-		// 		'Movie' => array('fields' => array('id', 'title'))
-		// 	),
-		// 	'limit' => $limit,
-		// 	'maxLimit' => $limit,
-		// 	'order' => array('MovieReview.created' => 'desc')
-		// );
-		// return $this->Paginator->paginate('MovieReview');
+		$selectedCategoriesIds = array();
+		if (isset($this->request->query['category_id'])) {
+			$selectedCategoriesIds = $this->request->query['category_id'];
+			if (!empty($selectedCategoriesIds)) {
+				$conditions['Category.id'] = $selectedCategoriesIds;
+			}
+		}
+
+		$selectedTypeId = null;
+		if (isset($this->request->query['type_id'])) {
+			$selectedTypeId = $this->request->query['type_id'];
+			if ($selectedTypeId) {
+				$conditions['Resource.type_id'] = $selectedTypeId;
+			}
+		}
+
+		$this->set(array(
+			'history' => $this->getPaginatedHistory($conditions, 10),
+			'categories' => $this->Category->find('list', array('recursive' => -1)),
+			'selectedCategoriesIds' => $selectedCategoriesIds,
+			'types' => $this->Type->find('list', array('recursive' => -1)),
+			'selectedTypeId' => $selectedTypeId,
+			'totalNumOfResources' => $this->History->getCount($conditions),
+			'perPage' => 10
+		));
 	}
 
 	private function getPaginatedUsers($limit = 15) {
@@ -169,6 +174,44 @@ class UsersController extends AppController {
 			'order' => array('User.created' => 'desc')
 		);
 		return $this->Paginator->paginate('User');
+	}
+
+	private function getPaginatedHistory($conditions = array(), $limit = 15) {
+		$settings = array(
+			'conditions' => $conditions,
+			'contain' => array(
+				'Resource',
+				'Resource.Type',
+				'Resource.Category'
+			),
+			'limit' => $limit,
+			'maxLimit' => $limit,
+			'order' => array('History.created' => 'desc')
+		);
+
+		if (array_key_exists('Category.id', $conditions)) {
+			$settings['joins'][] = array(
+				'table' => 'categories_resources',
+				'alias' => 'CategoriesResources',
+				'type' => 'inner',
+				'conditions' => array(
+					'CategoriesResources.resource_id = Resource.id',
+					'CategoriesResources.category_id' => $conditions['Category.id']
+				)
+			);
+
+			$settings['joins'][] = array(
+				'table' => 'categories',
+				'alias' => 'Category',
+				'type' => 'inner',
+				'conditions' => array(
+					'CategoriesResources.category_id = Category.id'
+				)
+			);
+		}
+
+		$this->Paginator->settings = $settings;
+		return $this->Paginator->paginate('History');
 	}
 
 	private function generateResponse($resource) {

@@ -32,8 +32,11 @@ App::uses('Model', 'Model');
 class AppModel extends Model {
 	public $actsAs = array('Containable');
 
-	public function getCount() {
-		return $this->find('count', array('recursive' => -1));
+	public function getCount($conditions = array()) {
+		return $this->find('count', array(
+			'conditions' => $conditions,
+			'recursive' => 0
+		));
 	}
 
 	public function save($data = null, $validate = true, $fieldList = array(), $fields = array()) {

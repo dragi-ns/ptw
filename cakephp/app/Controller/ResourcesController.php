@@ -19,36 +19,79 @@ class ResourcesController extends AppController {
 				))
 			);
 		}
-		$randomResource = $this->Resource->find('first', array(
-			'conditions' => $conditions,
-			'order' => 'RAND(NOW())',
-			'limit' => 1
-		));
 
+		$selectedCategoriesIds = array();
+		if (isset($this->request->query['category_id'])) {
+			$selectedCategoriesIds = $this->request->query['category_id'];
+			if (!empty($selectedCategoriesIds)) {
+				$conditions['Category.id'] = $selectedCategoriesIds;
+			}
+		}
+
+		$selectedTypeId = null;
+		if (isset($this->request->query['type_id'])) {
+			$selectedTypeId = $this->request->query['type_id'];
+			if ($selectedTypeId) {
+				$conditions['type_id'] = $selectedTypeId;
+			}
+		}
+
+		$randomResource = $this->getRandomResource($conditions);
 		if ($userId && !empty($randomResource)) {
 			$this->History->save(array(
 				'user_id' => $this->Auth->user('id'),
 				'resource_id' => $randomResource['Resource']['id']
 			));
 		}
-		$this->set('resource', $randomResource);
+
+		$this->set(array(
+			'resource' => $randomResource,
+			'categories' => $this->Category->find('list', array('recursive' => -1)),
+			'selectedCategoriesIds' => $selectedCategoriesIds,
+			'types' => $this->Type->find('list', array('recursive' => -1)),
+			'selectedTypeId' => $selectedTypeId
+		));
 	}
 
 	public function admin_index() {
 		$this->layout = 'admin';
-		$this->set([
-			'resources' => $this->getPaginatedResources(10),
-			'types' => array_map(
-				function($type) { return $type['Type']; },
-				$this->Type->find('all', ['recursive' => -1])
-			),
-			'categories' => array_map(
-				function($category) { return $category['Category']; },
-				$this->Category->find('all', ['recursive' => -1])
-			),
-			'totalNumOfResources' => $this->Resource->getCount(),
+
+		$conditions = array();
+
+		$selectedCategoriesIds = array();
+		if (isset($this->request->query['category_id'])) {
+			$selectedCategoriesIds = $this->request->query['category_id'];
+			if (!empty($selectedCategoriesIds)) {
+				$conditions['Category.id'] = $selectedCategoriesIds;
+			}
+		}
+
+		$selectedTypeId = null;
+		if (isset($this->request->query['type_id'])) {
+			$selectedTypeId = $this->request->query['type_id'];
+			if ($selectedTypeId) {
+				$conditions['type_id'] = $selectedTypeId;
+			}
+		}
+
+		$selectedStatus = null;
+		if (isset($this->request->query['status'])) {
+			$selectedStatus = $this->request->query['status'];
+			if ($selectedStatus !== '') {
+				$conditions['approved'] = $selectedStatus;
+			}
+		}
+
+		$this->set(array(
+			'resources' => $this->getPaginatedResources($conditions, 10),
+			'types' => $this->Type->find('list', array('recursive' => -1)),
+			'selectedTypeId' => $selectedTypeId,
+			'categories' => $this->Category->find('list', array('recursive' => -1)),
+			'selectedCategoriesIds' => $selectedCategoriesIds,
+			'totalNumOfResources' => $this->Resource->getCount($conditions),
+			'selectedStatus' => $selectedStatus,
 			'perPage' => 10
-		]);
+		));
 	}
 
 	public function admin_add() {
@@ -114,17 +157,41 @@ class ResourcesController extends AppController {
 		return $this->response;
 	}
 
-	protected function getPaginatedResources($limit = 15) {
-		$this->Paginator->settings = array(
+	private function getPaginatedResources($conditions = array(), $limit = 15) {
+		$settings = array(
+			'conditions' => $conditions,
 			'contain' => array('Type', 'Category'),
 			'limit' => $limit,
 			'maxLimit' => $limit,
 			'order' => array('Resource.created' => 'desc')
 		);
+
+		if (array_key_exists('Category.id', $conditions)) {
+			$settings['joins'][] = array(
+				'table' => 'categories_resources',
+				'alias' => 'CategoriesResources',
+				'type' => 'inner',
+				'conditions' => array(
+					'CategoriesResources.resource_id = Resource.id',
+					'CategoriesResources.category_id' => $conditions['Category.id']
+				)
+			);
+
+			$settings['joins'][] = array(
+				'table' => 'categories',
+				'alias' => 'Category',
+				'type' => 'inner',
+				'conditions' => array(
+					'CategoriesResources.category_id = Category.id'
+				)
+			);
+		}
+
+		$this->Paginator->settings = $settings;
 		return $this->Paginator->paginate('Resource');
 	}
 
-	protected function generateResponse($resource) {
+	private function generateResponse($resource) {
 		$result = array('success' => (bool) $resource);
 		if ($resource) {
 			$result['data'] = $resource['Resource'];
@@ -139,5 +206,37 @@ class ResourcesController extends AppController {
 			$result['errors'] = $this->Resource->validationErrors;
 		}
 		$this->response->body(json_encode($result));
+	}
+
+	private function getRandomResource($conditions) {
+		$settings = array(
+			'conditions' => $conditions,
+			'joins' => array(),
+			'order' => 'RAND(NOW())',
+			'limit' => 1
+		);
+
+		if (array_key_exists('Category.id', $conditions)) {
+			$settings['joins'][] = array(
+				'table' => 'categories_resources',
+				'alias' => 'CategoriesResources',
+				'type' => 'inner',
+				'conditions' => array(
+					'CategoriesResources.resource_id = Resource.id',
+					'CategoriesResources.category_id' => $conditions['Category.id']
+				)
+			);
+
+			$settings['joins'][] = array(
+				'table' => 'categories',
+				'alias' => 'Category',
+				'type' => 'inner',
+				'conditions' => array(
+					'CategoriesResources.category_id = Category.id'
+				)
+			);
+		}
+
+		return $this->Resource->find('first', $settings);
 	}
 }
