@@ -10,6 +10,7 @@
  * @var integer $perPage
  */
 
+$sortDir = $this->Paginator->sortDir();
 $this->Html->script('manage_resources', array('inline' => false));
 ?>
 
@@ -20,6 +21,13 @@ $this->Html->script('manage_resources', array('inline' => false));
 		<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
 			Filters
 		</button>
+		<?php
+		echo $this->Paginator->sort(
+			'created',
+			($sortDir === 'desc' ? 'Newest' : 'Oldest') . ' First',
+			array('class' => 'btn btn-outline-dark')
+		);
+		?>
 	</div>
 </div>
 

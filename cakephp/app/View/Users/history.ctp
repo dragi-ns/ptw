@@ -9,14 +9,25 @@
  * @var integer $selectedTypeId
  * @var bool $showFavorite
  */
+
+$sortDir = $this->Paginator->sortDir();
 $this->Html->script('favorite_resource', array('inline' => false));
 ?>
 
 <div class="d-flex justify-content-between align-items-center cg-3 mb-3">
 	<h2>History <span id="total-number-of-items" class="text-muted">(<?php echo $totalNumOfResources; ?>)</span></h2>
-	<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
-		Filters
-	</button>
+	<div class="d-flex rg-2 cg-2">
+		<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
+			Filters
+		</button>
+		<?php
+			echo $this->Paginator->sort(
+				'created',
+				($sortDir === 'desc' ? 'Newest' : 'Oldest') . ' First',
+				array('class' => 'btn btn-outline-dark')
+			);
+		?>
+	</div>
 </div>
 
 <div id="cards-container" class="cards d-flex flex-column rg-3 mb-3">
