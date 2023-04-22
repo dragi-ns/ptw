@@ -5,7 +5,7 @@ App::uses('CakeTime', 'Utility');
 
 class UsersController extends AppController {
 	public function isAuthorized($user) {
-		if (in_array($this->action, array('history', 'logout'))) {
+		if (in_array($this->action, array('history', 'settings', 'delete', 'logout'))) {
 			return true;
 		}
 		return parent::isAuthorized($user);
@@ -171,6 +171,37 @@ class UsersController extends AppController {
 			'showFavorite' => $showFavorite,
 			'perPage' => 10
 		));
+	}
+
+	public function settings() {
+		$user = $this->User->findById($this->Auth->user('id'));
+		unset($user['password']);
+
+		if ($this->request->is(array('post', 'put'))) {
+			$this->User->id = $user['User']['id'];
+			if ($this->User->save($this->request->data)) {
+				$this->Flash->success('Your account was successfully updated!');
+				return $this->redirect(array('controller' => 'users', 'action' => 'settings', 'admin' => false));
+			}
+			$this->Flash->error('Your account was not updated!');
+		}
+
+		if (!$this->request->data) {
+			$this->request->data = $user;
+		}
+
+		$this->set('user', $user);
+	}
+
+	public function delete() {
+		if ($this->User->delete($this->Auth->user('id'))) {
+			$this->Auth->logout();
+			$this->Flash->success('Your account has been deleted!');
+			return $this->redirect(array('controller' => 'resources', 'action' => 'index', 'admin' => false));
+		}
+
+		$this->Flash->error('Your account has not been deleted!');
+		return $this->redirect(array('controller' => 'users', 'action' => 'settings', 'admin' => false));
 	}
 
 	private function getPaginatedUsers($limit = 15) {

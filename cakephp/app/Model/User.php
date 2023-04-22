@@ -76,6 +76,19 @@ class User extends AppModel {
 				'message' => 'Your passwords do not match.'
 			)
 		),
+		'current_password' => array(
+			'required' => array(
+				'rule' => 'notBlank',
+				'allowEmpty' => true,
+				'message' => 'Please enter the current password.',
+				'on' => 'update'
+			),
+			'validateCurrentPassword' => array(
+				'rule' => 'validateCurrentPassword',
+				'message' => 'Current password is not valid.',
+				'on' => 'update'
+			)
+		),
 		'new_password' => array(
 			'required' => array(
 				'rule' => 'notBlank',
@@ -88,6 +101,11 @@ class User extends AppModel {
 				'message' => 'Password must at least 4 characters long.',
 				'on' => 'update'
 			),
+			'checkIfCurrentIsValid' => array(
+				'rule' => array('checkIfCurrentIsValid'),
+				'message' => 'Please enter the valid current password!',
+				'on' => 'update'
+			)
 		),
 		'new_password_confirm' => array(
 			'matchPasswords' => array(
@@ -111,6 +129,21 @@ class User extends AppModel {
 	public function alphaNumericDashUnderscore($check) {
 		$value = array_values($check)[0];
 		return preg_match('/^[0-9a-zA-Z_-]*$/', $value) === 1;
+	}
+
+	public function validateCurrentPassword($check) {
+		$user = $this->findById($this->id);
+		$hashedPassword = $user['User']['password'];
+		$currentPassword = array_values($check)[0];
+		$passwordHasher = new BlowfishPasswordHasher();
+		return $passwordHasher->check($currentPassword, $hashedPassword);
+	}
+
+	public function checkIfCurrentIsValid($check) {
+		if (!isset($this->data[$this->alias]['current_password'])) {
+			return true;
+		}
+		return $this->data[$this->alias]['current_password'] && !isset($this->validationErrors['current_password']);
 	}
 
 	public function matchPasswords($check, $fieldName) {
