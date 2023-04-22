@@ -44,6 +44,14 @@ class ResourcesController extends AppController {
 			));
 		}
 
+		if ($this->request->is('ajax')) {
+			$this->response->body(json_encode(array(
+				'success' => true,
+				'data' => $randomResource
+			)));
+			return $this->response;
+		}
+
 		$this->set(array(
 			'resource' => $randomResource,
 			'categories' => $this->Category->find('list', array('recursive' => -1)),
@@ -211,6 +219,10 @@ class ResourcesController extends AppController {
 	private function getRandomResource($conditions) {
 		$settings = array(
 			'conditions' => $conditions,
+			'contain' => array(
+				'Category',
+				'Type'
+			),
 			'joins' => array(),
 			'order' => 'RAND(NOW())',
 			'limit' => 1
