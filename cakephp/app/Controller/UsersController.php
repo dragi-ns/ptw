@@ -134,8 +134,9 @@ class UsersController extends AppController {
 		$this->loadModel('Type');
 		$this->loadModel('History');
 
+		$userId = $this->Auth->user('id');
 		$conditions = array(
-			'user_id' => $this->Auth->user('id')
+			'History.user_id' => $userId
 		);
 
 		$selectedCategoriesIds = array();
@@ -154,13 +155,20 @@ class UsersController extends AppController {
 			}
 		}
 
+		$showFavorite = false;
+		if (isset($this->request->query['show_favorite'])) {
+			$showFavorite = true;
+			$conditions['Favorite.user_id'] = $userId;
+		}
+
 		$this->set(array(
-			'history' => $this->getPaginatedHistory($conditions, 10),
+			'history' => $this->getPaginatedHistory($conditions, 10, $userId),
 			'categories' => $this->Category->find('list', array('recursive' => -1)),
 			'selectedCategoriesIds' => $selectedCategoriesIds,
 			'types' => $this->Type->find('list', array('recursive' => -1)),
 			'selectedTypeId' => $selectedTypeId,
 			'totalNumOfResources' => $this->History->getCount($conditions),
+			'showFavorite' => $showFavorite,
 			'perPage' => 10
 		));
 	}
@@ -176,13 +184,16 @@ class UsersController extends AppController {
 		return $this->Paginator->paginate('User');
 	}
 
-	private function getPaginatedHistory($conditions = array(), $limit = 15) {
+	private function getPaginatedHistory($conditions = array(), $limit = 15, $userId = null) {
 		$settings = array(
 			'conditions' => $conditions,
 			'contain' => array(
 				'Resource',
 				'Resource.Type',
-				'Resource.Category'
+				'Resource.Category',
+				'Resource.Favorite' => array(
+					'conditions' => array('Favorite.user_id' => $userId)
+				)
 			),
 			'limit' => $limit,
 			'maxLimit' => $limit,
@@ -209,6 +220,19 @@ class UsersController extends AppController {
 				)
 			);
 		}
+
+		if (array_key_exists('Favorite.user_id', $conditions)) {
+			$settings['joins'][] = array(
+				'table' => 'favorites',
+				'alias' => 'Favorite',
+				'type' => 'inner',
+				'conditions' => array(
+					'Favorite.resource_id = Resource.id',
+					'Favorite.user_id' => $conditions['Favorite.user_id']
+				)
+			);
+		}
+
 
 		$this->Paginator->settings = $settings;
 		return $this->Paginator->paginate('History');

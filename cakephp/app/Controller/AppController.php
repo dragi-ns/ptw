@@ -87,6 +87,7 @@ class AppController extends Controller {
 		if ($this->request->is('ajax')) {
 			$this->autoRender = false;
 			$this->response->type('json');
+			$this->response->disableCache();
 			$this->Security->validatePost = false;
 		}
 		$this->Auth->allow(array('index', 'view'));

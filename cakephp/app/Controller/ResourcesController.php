@@ -6,6 +6,13 @@ App::uses('CakeTime', 'Utility');
 class ResourcesController extends AppController {
 	public $uses = array('Resource', 'Type', 'Category');
 
+	public function isAuthorized($user) {
+		if (in_array($this->action, array('favorite'))) {
+			return true;
+		}
+		return parent::isAuthorized($user);
+	}
+
 	public function index() {
 		$this->loadModel('History');
 
@@ -36,7 +43,7 @@ class ResourcesController extends AppController {
 			}
 		}
 
-		$randomResource = $this->getRandomResource($conditions);
+		$randomResource = $this->getRandomResource($conditions, $userId);
 		if ($userId && !empty($randomResource)) {
 			$this->History->save(array(
 				'user_id' => $this->Auth->user('id'),
@@ -59,6 +66,37 @@ class ResourcesController extends AppController {
 			'types' => $this->Type->find('list', array('recursive' => -1)),
 			'selectedTypeId' => $selectedTypeId
 		));
+	}
+
+	public function favorite($id = null) {
+		$this->request->allowMethod('ajax');
+		$this->loadModel('Favorite');
+
+		if (!$id || !$this->Resource->exists($id)) {
+			$this->generateNotFoundResponse('Resource');
+			return $this->response;
+		}
+
+		$userId = $this->Auth->user('id');
+		$isUsersFavorite = $this->Favorite->isUsersFavorite($id, $userId);
+
+		if ($isUsersFavorite) {
+			$success = $this->Favorite->delete($isUsersFavorite['Favorite']['id']);
+		} else {
+			$success = $this->Favorite->save(array(
+				'resource_id' => $id,
+				'user_id' => $userId
+			));
+		}
+
+		$this->response->body(json_encode(array(
+			'success' => (bool) $success,
+			'data' => array(
+				'id' => $id,
+				'isFavorite' => (bool) ($success ? !$isUsersFavorite : $isUsersFavorite)
+			)
+		)));
+		return $this->response;
 	}
 
 	public function admin_index() {
@@ -216,12 +254,17 @@ class ResourcesController extends AppController {
 		$this->response->body(json_encode($result));
 	}
 
-	private function getRandomResource($conditions) {
+	private function getRandomResource($conditions, $userId = null) {
 		$settings = array(
 			'conditions' => $conditions,
 			'contain' => array(
 				'Category',
-				'Type'
+				'Type',
+				'Favorite' => array(
+					'conditions' => array(
+						'Favorite.user_id' => $userId
+					)
+				)
 			),
 			'joins' => array(),
 			'order' => 'RAND(NOW())',

@@ -7,7 +7,9 @@
  * @var integer[] $selectedCategoriesIds
  * @var Type[] $types
  * @var integer $selectedTypeId
+ * @var bool $showFavorite
  */
+$this->Html->script('favorite_resource', array('inline' => false));
 ?>
 
 <div class="d-flex justify-content-between align-items-center cg-3 mb-3">
@@ -26,7 +28,7 @@
 				<div class="card-header d-flex flex-wrap align-items-center justify-content-between rg-2 cg-2">
 					<p class="mb-0">Seen: <?php echo $this->Time->format('d/m/Y H:i:s', $item['History']['created']); ?></p>
 					<button class="toggle-favorite-btn btn btn-light btn-sm">
-						<i class="bi bi-heart text-danger"></i>
+						<i class="bi bi-heart<?php echo $item['Resource']['Favorite'] ? '-fill' : ''; ?> text-danger"></i>
 					</button>
 				</div>
 				<div class="card-body">
@@ -55,6 +57,7 @@ echo $this->element('filters-modal', array(
 	'categories' => $categories,
 	'selectedCategoriesId' => $selectedCategoriesIds,
 	'types' => $types,
-	'selectedTypeId' => $selectedTypeId
+	'selectedTypeId' => $selectedTypeId,
+	'showFavorite' => $showFavorite
 ));
 ?>

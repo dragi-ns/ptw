@@ -4,8 +4,9 @@
  * @var integer[] $selectedCategoriesIds
  * @var Type[] $types
  * @var integer $selectedTypeId
- * @var bool $excludeScripts
  * @var integer $selectedStatus
+ * @var bool $adminFilter
+ * @var bool $showFavorite
  */
 
 $this->Html->css('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css', array('inline' => false));
@@ -53,8 +54,10 @@ $this->Html->script('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/
 					'required' => false,
 					'data-width' => '100%'
 				));
+				?>
 
-				if (isset($adminFilter) && $adminFilter) {
+				<?php if (isset($adminFilter) && $adminFilter): ?>
+					<?php
 					echo $this->Form->input('status', array(
 						'hiddenField' => false,
 						'type' => 'select',
@@ -66,10 +69,21 @@ $this->Html->script('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/
 						'selected' => $selectedStatus,
 						'data-width' => '100%'
 					));
-				}
+					?>
+				<?php else: ?>
+					<div class="form-check">
+						<input class="form-check-input"
+							   type="checkbox"
+							   value="1"
+							   id="show_favorite"
+							   name="show_favorite"<?php echo $showFavorite ? ' checked' : ''; ?>>
+						<label class="form-check-label" for="show_favorite">
+							Only show favorite
+						</label>
+					</div>
+				<?php endif; ?>
 
-				echo $this->Form->end();
-				?>
+				<?php echo $this->Form->end(); ?>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

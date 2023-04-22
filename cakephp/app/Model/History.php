@@ -42,6 +42,18 @@ class History extends AppModel {
 			);
 		}
 
+		if (array_key_exists('Favorite.user_id', $conditions)) {
+			$settings['joins'][] = array(
+				'table' => 'favorites',
+				'alias' => 'Favorite',
+				'type' => 'inner',
+				'conditions' => array(
+					'Favorite.resource_id = Resource.id',
+					'Favorite.user_id' => $conditions['Favorite.user_id']
+				)
+			);
+		}
+
 		return $this->find('count', $settings);
 	}
 }

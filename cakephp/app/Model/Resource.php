@@ -12,6 +12,11 @@ class Resource extends AppModel {
 			'className' => 'History',
 			'foreignKey' => 'resource_id',
 			'dependent' => true
+		),
+		'Favorite' => array(
+			'className' => 'Favorite',
+			'foreignKey' => 'resource_id',
+			'dependent' => true
 		)
 	);
 

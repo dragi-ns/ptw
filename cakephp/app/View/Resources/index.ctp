@@ -1,5 +1,6 @@
 <?php
 /**
+ * @var bool $isAuth
  * @var Resource $resource
  * @var Category[] $categories
  * @var integer[] $selectedCategoriesIds
@@ -8,19 +9,22 @@
  */
 
 $this->Html->script('random_resource', array('inline' => false));
+$this->Html->script('favorite_resource', array('inline' => false));
 ?>
 
-<div id="resource" class="d-flex flex-column h-md-100">
+<div id="resource" class="d-flex flex-column h-100">
 	<?php if (!empty($resource)): ?>
-		<div class="resource d-flex flex-column justify-content-md-center h-md-100 pb-lg-5">
-			<?php echo $this->element('tags', array('resource' => $resource)) ?>
-			<h2>
-				<a href="<?php echo $resource['Resource']['url']; ?>" target="_blank">
-					<?php echo h($resource['Resource']['title']); ?>
-				</a>
-			</h2>
-			<p class="mb-4"><?php echo h($resource['Resource']['description']); ?></p>
-			<div class="controls d-flex justify-content-end rg-2 cg-2">
+		<div data-id="<?php echo $resource['Resource']['id']; ?>" class="resource-card d-flex flex-column justify-content-center h-100 pb-lg-5">
+			<div class="resource-card-content">
+				<?php echo $this->element('tags', array('resource' => $resource)) ?>
+				<h2>
+					<a href="<?php echo $resource['Resource']['url']; ?>" target="_blank">
+						<?php echo h($resource['Resource']['title']); ?>
+					</a>
+				</h2>
+				<p class="mb-4"><?php echo h($resource['Resource']['description']); ?></p>
+			</div>
+			<div class="resource-card-controls d-flex justify-content-end rg-2 cg-2">
 				<button class="toggle-favorite-btn btn btn-light btn-lg">
 					<i class="bi bi-heart text-danger"></i>
 				</button>

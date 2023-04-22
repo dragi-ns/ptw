@@ -54,11 +54,11 @@ body {
 	border-color: #dee2e6;
 }
 
-.resource .badge {
+.resource-card .badge {
 	font-size: 0.9rem;
 }
 
-.resource p {
+.resource-card p {
 	max-width: 1200px;
 }
 

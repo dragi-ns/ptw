@@ -11,6 +11,11 @@ class User extends AppModel {
 			'className' => 'History',
 			'foreignKey' => 'user_id',
 			'dependent' => true
+		),
+		'Favorite' => array(
+			'className' => 'Favorite',
+			'foreignKey' => 'user_id',
+			'dependent' => true
 		)
 	);
 
