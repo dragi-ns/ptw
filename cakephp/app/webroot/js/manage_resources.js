@@ -114,7 +114,8 @@ function handleTypeSuccess(form, response) {
 			`<option value="${response.data.id}">${response.data.name}</option>`
 		);
 		typesSelect.selectpicker("refresh");
-		typesSelect.selectpicker("val", [response.data.id]);
+		typesSelect.selectpicker("val", [+response.data.id]);
+		TYPES.push({ id: +response.data.id, name: response.data.name });
 		initializeToast(
 			`Type (id: ${response.data.id}, name: ${response.data.name}) was successfully added!`
 		);
@@ -142,8 +143,9 @@ function handleCategorySuccess(form, response) {
 		categoriesSelect.selectpicker("refresh");
 		categoriesSelect.selectpicker("val", [
 			...categoriesSelect.selectpicker("val"),
-			response.data.id,
+			+response.data.id,
 		]);
+		CATEGORIES.push({ id: +response.data.id, name: response.data.name });
 		initializeToast(
 			`Category (id: ${response.data.id}, name: ${response.data.name}) was successfully added!`
 		);
@@ -241,7 +243,7 @@ function createResourceModal(resourceData = null) {
 										required="required">
 									${TYPES.map((type) => {
 										const isSelected =
-											resourceData && resourceData.type.id === type.id;
+											resourceData && resourceData.type.id == type.id;
 										return `<option value="${type.id}"${
 											isSelected ? "selected" : ""
 										}>${type.name}</option>`;
@@ -269,8 +271,7 @@ function createResourceModal(resourceData = null) {
 										const isSelected =
 											resourceData &&
 											resourceData.categories.find(
-												(selectedCategory) =>
-													selectedCategory.id === category.id
+												(selectedCategory) => selectedCategory.id == category.id
 											);
 										return `<option value="${category.id}"${
 											isSelected ? "selected" : ""
