@@ -6,6 +6,7 @@
  * @var integer $selectedTypeId
  * @var integer $selectedStatus
  * @var bool $adminFilter
+ * @var bool $historyFilter
  * @var bool $showFavorite
  */
 
@@ -56,21 +57,21 @@ $this->Html->script('https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/
 				));
 				?>
 
-				<?php if (isset($adminFilter) && $adminFilter): ?>
-					<?php
-					echo $this->Form->input('status', array(
-						'hiddenField' => false,
-						'type' => 'select',
-						'label' => 'Status',
-						'class' => 'selectpicker',
-						'title' => 'Filter by type',
-						'empty' => 'All',
-						'options' => array(1 => 'Approved', 0 => 'Not Approved'),
-						'selected' => $selectedStatus,
-						'data-width' => '100%'
-					));
-					?>
-				<?php else: ?>
+				<?php if (isset($adminFilter) && $adminFilter) {
+						echo $this->Form->input('status', array(
+							'hiddenField' => false,
+							'type' => 'select',
+							'label' => 'Status',
+							'class' => 'selectpicker',
+							'title' => 'Filter by type',
+							'empty' => 'All',
+							'options' => array(1 => 'Approved', 0 => 'Not Approved'),
+							'selected' => $selectedStatus,
+							'data-width' => '100%'
+						));
+					}
+				?>
+				<?php if (isset($historyFilter) && $historyFilter): ?>
 					<div class="form-check">
 						<input class="form-check-input"
 							   type="checkbox"

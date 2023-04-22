@@ -69,6 +69,7 @@ echo $this->element('filters-modal', array(
 	'selectedCategoriesId' => $selectedCategoriesIds,
 	'types' => $types,
 	'selectedTypeId' => $selectedTypeId,
+	'historyFilter' => true,
 	'showFavorite' => $showFavorite
 ));
 ?>
