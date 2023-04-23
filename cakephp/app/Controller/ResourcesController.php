@@ -16,7 +16,7 @@ class ResourcesController extends AppController {
 	public function index() {
 		$this->loadModel('History');
 
-		$conditions = array();
+		$conditions = array('Resource.approved' => true);
 		$userId = $this->Auth->user('id');
 		if ($userId) {
 			$conditions['NOT'] = array(
@@ -102,8 +102,8 @@ class ResourcesController extends AppController {
 	public function admin_index() {
 		$this->layout = 'admin';
 
-		$conditions = array();
 
+		$conditions = array('Resource.approved' => true);
 		$selectedCategoriesIds = array();
 		if (isset($this->request->query['category_id'])) {
 			$selectedCategoriesIds = $this->request->query['category_id'];

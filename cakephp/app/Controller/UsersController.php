@@ -136,6 +136,7 @@ class UsersController extends AppController {
 
 		$userId = $this->Auth->user('id');
 		$conditions = array(
+			'Resource.approved' => true,
 			'History.user_id' => $userId
 		);
 
