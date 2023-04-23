@@ -35,4 +35,8 @@ VALUES
     (
         6,
         'Library'
+    ),
+    (
+        7,
+        'HTML/CSS'
     );

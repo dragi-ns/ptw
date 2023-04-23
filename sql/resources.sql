@@ -49,4 +49,18 @@ VALUES
         'A second Jason joins this episode of Programming Throwdown! Jason McDonald – Python evangelist, author, and more – talks to Patrick and Jason about his experience with the programming language, how his disability helped and hindered his software career, and where its strengths and weaknesses lie.',
         'https://www.programmingthrowdown.com/2023/03/154-python-again-with-jason-c-mcdonald.html',
         2
+    ),
+    (
+        5,
+        'Ways to Create an Enum in JavaScript',
+        'An enum is a set of named constants. Plain objects, frozen objects, proxied objects or a class-based approach provide some ways to create enums in JavaScript.',
+        'https://dmitripavlutin.com/javascript-enum/',
+        1
+    ),
+    (
+        6,
+        'Recreating a "Mouse-Aware" Text Effect',
+        'The author was “so impressed with the design” of the Creative South 2023 site that she wanted to recreate the neat ‘3D’ effect seen on the title text. Here’s a quick look at how she did it, complete with code and a demo.',
+        'https://rachsmith.com/recreating-creative-south-title/',
+        1
     );
