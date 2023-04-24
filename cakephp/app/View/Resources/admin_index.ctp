@@ -14,9 +14,9 @@ $sortDir = $this->Paginator->sortDir();
 $this->Html->script('manage_resources', array('inline' => false));
 ?>
 
-<div class="row no-gutters justify-content-between align-items-center mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center cg-3 mb-3">
 	<h2>Resources <span id="total-number-of-items" class="text-muted">(<?php echo $totalNumOfResources; ?>)</span></h2>
-	<div class="d-flex cg-2">
+	<div class="d-flex flex-grow-1 justify-content-end cg-2">
 		<button id="add-resource-btn" class="btn btn-primary">Add Resource</button>
 		<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
 			Filters

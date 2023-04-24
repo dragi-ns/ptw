@@ -22,16 +22,17 @@
 			</button>
 
 			<div class="collapse navbar-collapse" id="navbarMenu">
-				<?php if ($this->here === '/'): ?>
-					<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
-						Filters
-					</button>
-				<?php endif; ?>
-				<div class="navbar-left d-flex flex-wrap align-items-center ml-auto">
+				<div class="navbar-left d-flex flex-wrap align-items-center cg-3 rg-3 ml-auto">
+					<?php if ($this->here === '/'): ?>
+						<button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#filters-modal">
+							Filters
+						</button>
+					<?php endif; ?>
+
 					<?php if ($isAuth): ?>
 						<?php if ($isAdmin): ?>
 							<a href="<?php echo $this->Html->url(array('controller' => 'users', 'action' => 'index', 'admin' => true)) ?>"
-							   class="btn btn-outline-dark mr-3">
+							   class="btn btn-outline-dark">
 								Dashboard
 							</a>
 						<?php endif; ?>
